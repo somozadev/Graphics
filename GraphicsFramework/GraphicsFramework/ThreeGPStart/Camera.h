@@ -56,6 +56,9 @@ namespace Helpers
 		// Returns a vector indicating the direction of up
 		glm::vec3 GetUpVector() const;
 
+
+		glm::mat4 GetViewMatrix() const;
+
 		// Helper to allow easy outputting of camera values
 		std::string ToString() const {
 			return "Pos x:" + std::to_string(m_position.x) +

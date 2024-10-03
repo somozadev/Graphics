@@ -1,15 +1,2 @@
-﻿  Camera.cpp
-  imgui.cpp
-  imgui_draw.cpp
-  imgui_impl_glfw.cpp
-  imgui_impl_opengl3.cpp
-  imgui_widgets.cpp
-  Helper.cpp
-  ImageLoader.cpp
-  main.cpp
-  Mesh.cpp
-  Renderer.cpp
-  Simulation.cpp
-  Generando código...
-  glew.c
+﻿  Renderer.cpp
   ThreeGPStart.vcxproj -> C:\Users\mesom\Documents\GitHub\Graphics\GraphicsFramework\GraphicsFramework\x64\Debug\GraphicsFramework.exe

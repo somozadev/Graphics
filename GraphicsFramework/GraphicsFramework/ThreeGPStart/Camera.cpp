@@ -57,7 +57,12 @@ namespace Helpers
 		glm::vec4 up{ glm::inverse(m_rotationMatrix) * glm::vec4(0, 1, 0, 1) };
 		return glm::vec3(up);
 	}
-
+	glm::mat4 Camera::GetViewMatrix() const
+	{
+		glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), -m_position); //Calculate translation matrix (moving the camera to its current position)
+		glm::mat4 viewMatrix = glm::inverse(m_rotationMatrix) * translationMatrix; //Inverse of the camera's rotation and translation
+		return viewMatrix;
+	}
 	// Calculate rotation matrix from current axis rotations
 	glm::mat4 Camera::CalcRotationMatrix() const
 	{
