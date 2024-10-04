@@ -1,3 +1,16 @@
-﻿  Renderer.cpp
-C:\Users\D3906354\Source\Graphics\GraphicsFramework\GraphicsFramework\ThreeGPStart\Renderer.cpp(142,30): warning C4267: '=': conversion from 'size_t' to 'GLuint', possible loss of data
-  ThreeGPStart.vcxproj -> C:\Users\D3906354\Source\Graphics\GraphicsFramework\GraphicsFramework\x64\Debug\GraphicsFramework.exe
+﻿  Camera.cpp
+  imgui.cpp
+  imgui_draw.cpp
+  imgui_impl_glfw.cpp
+  imgui_impl_opengl3.cpp
+  imgui_widgets.cpp
+  Helper.cpp
+  ImageLoader.cpp
+  Mesh.cpp
+  Renderer.cpp
+C:\Users\mesom\Documents\GitHub\Graphics\GraphicsFramework\GraphicsFramework\ThreeGPStart\Renderer.cpp(142,30): warning C4267: '=': conversión de 'size_t' a 'GLuint'; posible pérdida de datos
+  Simulation.cpp
+  main.cpp
+  Generando código...
+  glew.c
+  ThreeGPStart.vcxproj -> C:\Users\mesom\Documents\GitHub\Graphics\GraphicsFramework\GraphicsFramework\x64\Debug\GraphicsFramework.exe

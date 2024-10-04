@@ -2,6 +2,11 @@
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 
+#include <glm/glm/glm.hpp>
+#include <glm/glm/gtc/matrix_transform.hpp>
+#include <glm/glm/gtc/type_ptr.hpp>
+
+
 #include "Shader.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -180,9 +185,14 @@ int main()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); //normal mode
 
 
+    auto transformation = glm::mat4(1.0f);
+    transformation = glm::rotate(transformation, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+    transformation = glm::scale(transformation, glm::vec3(1.5f, 1.5f, 1.5f));
+
     shaders.use();
     shaders.setInt("ourTexture", 0);
     shaders.setInt("ourTextureTwo", 1);
+    shaders.setUniformMatrix4fv("transform", transformation);
     
     //main while loop
     while (!glfwWindowShouldClose(window))
@@ -197,7 +207,9 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture_two);
-                
+        transformation = glm::rotate(transformation, -(float)glfwGetTime()/1000.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+        shaders.setUniformMatrix4fv("transform", transformation);
+
         shaders.use();
         glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLES, 0, 6);        
@@ -212,7 +224,7 @@ int main()
 
         glfwPollEvents();
     }
-
+    
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);

@@ -7,6 +7,9 @@
 #include <iostream>
 #include <windows.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm/detail/type_mat.hpp>
+#include <glm/glm/detail/type_mat4x4.hpp>
+#include <glm/glm/gtc/type_ptr.inl>
 
 
 Shader::Shader(const char* vertex_path, const char* fragment_path)
@@ -99,4 +102,8 @@ void Shader::setInt(const std::string &name, int value) const
 void Shader::setFloat(const std::string &name, float value) const
 { 
     glUniform1f(glGetUniformLocation(id, name.c_str()), value); 
-} 
+}
+void Shader::setUniformMatrix4fv(const std::string &name, glm::mat4 value) const
+{
+    glUniformMatrix4fv(glGetUniformLocation(id, name.c_str()),1, GL_FALSE, glm::value_ptr(value));
+}
