@@ -2,7 +2,11 @@
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 
-// Vertex Shader source code
+#include "Shader.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+/*Vertex Shader source code
 const char* vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "void main()\n"
@@ -17,13 +21,18 @@ const char* fragmentShaderSource = "#version 330 core\n"
     "   FragColor = vec4(0.8f, 0.3f, 0.02f, 1.0f);\n"
     "}\n\0";
 
-
+*/
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
-
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
+}
 int main()
 {
     //init GLFW
@@ -34,7 +43,8 @@ int main()
     //tell glfw we are using the core profile (only have the modern functions)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // GLfloat vertices[] =
+
+    /* GLfloat vertices[] =
     // {
     //     -0.5f, -0.5f, 0.0f,
     //     0.5f, -0.5f, 0.0f,
@@ -43,53 +53,80 @@ int main()
     //     -0.5f, -0.5f, 0.0f,
     //     0.5f, 0.5f, 0.0f,
     //     -0.5f, 0.5f, 0.0f
-    // };
+     };*/
 
-    GLfloat vertices[] = {
-        0.5f,  0.5f, 0.0f,  // top right
-        0.5f, -0.5f, 0.0f,  // bottom right
-       -0.5f, -0.5f, 0.0f,  // bottom left
-       -0.5f,  0.5f, 0.0f   // top left 
+    GLfloat vertices[] = { // positions       colors     texture coords
+        0.5f,  0.5f, 0.0f,     1.0f, 0.0f, 0.0f,        1.0f, 1.0f,// top right
+        0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,       1.0f, 0.0f,// bottom right
+       -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,        0.0f, 0.0f,// bottom left
+       -0.5f,  0.5f, 0.0f,     1.0f, 1.0f, 0.0f,       0.0f, 1.0f // top left 
    };
     unsigned int indices[] = { 
         0, 1, 3,   // first triangle
         1, 2, 3    // second triangle
     };
 
-    
+     
     //Create a glfwWindow object of 800 by 800 pixels and give it a name 
     GLFWwindow* window = glfwCreateWindow(800, 800, "Somine Renderer", NULL, NULL);
     //error check if the window fails to create
     if (window == NULL)
     {
-        std::cout << "Failed to crete GLFW window " << std::endl;
+        std::cout << "Failed to crete GLFW window \n";
         glfwTerminate();
         return -1;
     }
     //introduce the window into current opengl context 
     glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     //load glad so it configures opengl 
-    gladLoadGL();
+    // gladLoadGL();
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
     //specify the viewport of opengl window, from x0 y0 to x80 y800
     glViewport(0, 0, 800, 800);
 
 
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource,NULL);
-    glCompileShader(vertexShader);
+    /* GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    // glShaderSource(vertexShader, 1, &vertexShaderSource,NULL);
+    // glCompileShader(vertexShader);
+    //
+    // GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    // glShaderSource(fragmentShader, 1, &fragmentShaderSource,NULL);
+    // glCompileShader(fragmentShader);
+    //
+    // GLuint shaderProgram = glCreateProgram();
+    // glAttachShader(shaderProgram, vertexShader);
+    // glAttachShader(shaderProgram, fragmentShader);
+    // glLinkProgram(shaderProgram);
+    //
+    // glDeleteShader(vertexShader);
+    // glDeleteShader(fragmentShader); */
+    const Shader shaders("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl"); //if this is called before glad is initialize, errors
 
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource,NULL);
-    glCompileShader(fragmentShader);
+    int width, height, nr_channels;
+    unsigned char *texture_data = stbi_load("textures/container.jpg", &width, &height, &nr_channels, 0);
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    if(texture_data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, texture_data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+        std::cout << "Failed to load texture" << std::endl;
+    stbi_image_free(texture_data);
+    
     unsigned int EBO;
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -102,19 +139,28 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(GLfloat)));
+    glEnableVertexAttribArray(1);
 
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // glBindVertexArray(0);
+    glVertexAttribPointer(2,2,GL_FLOAT, GL_FALSE, 8*sizeof(GLfloat), (void*)(6*sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
+
+    /* glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindVertexArray(0); */
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
 
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //wireframe mode
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); //normal mode
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); //wireframe mode
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); //normal mode
+
+
+    shaders.use();
+    shaders.setInt("ourTexture", 0);
     
     //main while loop
     while (!glfwWindowShouldClose(window))
@@ -123,9 +169,13 @@ int main()
         glClearColor(0.1f, 0.05f, 0.1f, 1.0f);
         //clean the back buffer and assign the new color to it 
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(shaderProgram);
+        // glUseProgram(shaderProgram);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+                
+        shaders.use();
         glBindVertexArray(VAO);
-        
         // glDrawArrays(GL_TRIANGLES, 0, 6);        
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -141,7 +191,8 @@ int main()
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
+    glDeleteBuffers(1, &EBO);
+    // glDeleteProgram(shaderProgram);
 
     //destroy window
     glfwDestroyWindow(window);
