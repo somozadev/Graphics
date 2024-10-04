@@ -120,8 +120,8 @@ bool Renderer::InitialiseGeometry()
 		2, 3, 0,
 
 		// Back face
-		4, 5, 6,
-		6, 7, 4,
+		6, 5, 4, //4, 5, 6,	they where flipped. Should be always anticlockwise fromto the camera perspective
+		4, 7, 6, //6, 7, 4,	they where flipped. Should be always anticlockwise fromto the camera perspective
 
 		// Left face
 		0, 3, 7,
@@ -136,10 +136,10 @@ bool Renderer::InitialiseGeometry()
 		6, 7, 3,
 
 		// Bottom face
-		0, 1, 5,
-		5, 4, 0
+		5, 1, 0, //0, 1, 5, they where flipped. Should be always anticlockwise fromto the camera perspective
+		0, 4, 5  //5, 4, 0	they where flipped. Should be always anticlockwise fromto the camera perspective
 	};
-	
+	m_numElements = indices.size();
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
@@ -211,7 +211,7 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 
 
 	glBindVertexArray(m_VAO);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, m_numElements, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 	// TODO: Compute viewport and projection matrix
 

@@ -108,7 +108,7 @@ int main()
 
     int width, height, nr_channels;
     unsigned char *texture_data = stbi_load("textures/container.jpg", &width, &height, &nr_channels, 0);
-    unsigned int texture;
+    unsigned int texture, texture_two;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -126,6 +126,27 @@ int main()
     else
         std::cout << "Failed to load texture" << std::endl;
     stbi_image_free(texture_data);
+    glGenTextures(1, &texture_two);
+    glBindTexture(GL_TEXTURE_2D, texture_two);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *texture_data_two = stbi_load("textures/happy.png", &width, &height, &nr_channels, 0);
+    
+    if(texture_data_two)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_two);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+        std::cout << "Failed to load texture" << std::endl;
+    stbi_image_free(texture_data_two);
+    
+
     
     unsigned int EBO;
     glGenBuffers(1, &EBO);
@@ -161,6 +182,7 @@ int main()
 
     shaders.use();
     shaders.setInt("ourTexture", 0);
+    shaders.setInt("ourTextureTwo", 1);
     
     //main while loop
     while (!glfwWindowShouldClose(window))
@@ -173,6 +195,8 @@ int main()
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture_two);
                 
         shaders.use();
         glBindVertexArray(VAO);

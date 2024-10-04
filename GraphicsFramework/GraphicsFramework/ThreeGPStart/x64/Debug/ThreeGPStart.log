@@ -1,2 +1,3 @@
 ﻿  Renderer.cpp
-  ThreeGPStart.vcxproj -> C:\Users\mesom\Documents\GitHub\Graphics\GraphicsFramework\GraphicsFramework\x64\Debug\GraphicsFramework.exe
+C:\Users\D3906354\Source\Graphics\GraphicsFramework\GraphicsFramework\ThreeGPStart\Renderer.cpp(142,30): warning C4267: '=': conversion from 'size_t' to 'GLuint', possible loss of data
+  ThreeGPStart.vcxproj -> C:\Users\D3906354\Source\Graphics\GraphicsFramework\GraphicsFramework\x64\Debug\GraphicsFramework.exe
