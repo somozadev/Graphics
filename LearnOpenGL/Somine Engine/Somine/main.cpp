@@ -73,7 +73,7 @@ int main()
 
      
     //Create a glfwWindow object of 800 by 800 pixels and give it a name 
-    GLFWwindow* window = glfwCreateWindow(800, 800, "Somine Renderer", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "Somine Renderer", NULL, NULL);
     //error check if the window fails to create
     if (window == NULL)
     {
@@ -91,7 +91,7 @@ int main()
         return -1;
     }
     //specify the viewport of opengl window, from x0 y0 to x80 y800
-    glViewport(0, 0, 800, 800);
+    glViewport(0, 0, 800, 600);
 
 
     /* GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -175,10 +175,10 @@ int main()
     glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0); 
+    // glBindVertexArray(0); 
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    
 
 
 
@@ -186,14 +186,20 @@ int main()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); //normal mode
 
 
-    auto transformation = glm::mat4(1.0f);
-    transformation = glm::rotate(transformation, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-    transformation = glm::scale(transformation, glm::vec3(1.5f, 1.5f, 1.5f));
+
+    glm::mat4 model_matrix = glm::mat4(1.0f);
+    glm::mat4 view_matrix  = glm::mat4(1.0f);
+    glm::mat4 projection_matrix;
+    model_matrix = glm::rotate(model_matrix, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    view_matrix = glm::translate(view_matrix, glm::vec3(0.0f, 0.0f, -3.0f )); 
+    projection_matrix = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f );
+
+    
+
 
     shaders.use();
     shaders.setInt("ourTexture", 0);
     shaders.setInt("ourTextureTwo", 1);
-    shaders.setUniformMatrix4fv("transform", transformation);
     
     //main while loop
     while (!glfwWindowShouldClose(window))
@@ -208,8 +214,10 @@ int main()
         glBindTexture(GL_TEXTURE_2D, texture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture_two);
-        transformation = glm::rotate(transformation, -(float)glfwGetTime()/1000.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-        shaders.setUniformMatrix4fv("transform", transformation);
+
+        shaders.setUniformMatrix4fv("model_matrix",model_matrix);
+        shaders.setUniformMatrix4fv("view_matrix",view_matrix);
+        shaders.setUniformMatrix4fv("projection_matrix",projection_matrix);
 
         shaders.use();
         glBindVertexArray(VAO);
