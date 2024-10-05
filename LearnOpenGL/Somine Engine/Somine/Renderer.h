@@ -16,11 +16,15 @@ private:
     Camera m_camera;
     std::vector<GLfloat> bg_color;
     std::vector<Mesh> meshes;
+
+    float current_frame;
+    float last_frame; 
     
     bool m_wireframe{false};
     Window* ref_window;
 
 public:
+    float delta_time; 
     float m_aspectRatio;
     Renderer(const char* vertex_path = "shaders/vertex_shader.glsl",
              const char* fragment_path = "shaders/fragment_shader.glsl", Window* window = nullptr);
