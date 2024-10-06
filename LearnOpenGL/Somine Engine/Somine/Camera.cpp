@@ -31,7 +31,7 @@ glm::mat4 Camera::getViewMatrix()
 void Camera::translate(float delta_time)
 {
     if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        m_speed = 25.0f * delta_time;
+        m_speed = 5.0f * delta_time;
     else m_speed = 1.0f * delta_time;
 
     if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_W) == GLFW_PRESS)

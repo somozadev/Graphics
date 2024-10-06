@@ -29,7 +29,7 @@ public:
     Renderer(const char* vertex_path = "shaders/vertex_shader.glsl",
              const char* fragment_path = "shaders/fragment_shader.glsl", Window* window = nullptr);
     void init();
-    void update(float delta_time); //ref camera maybe?  
+    void update(); //ref camera maybe?  
     void updateProjection();
     
     

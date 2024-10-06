@@ -26,7 +26,7 @@ private:
     float camX;
     float camY;
 
-    const float m_sensitivity = 0.2f;
+    const float m_sensitivity = 0.1f;
     float yaw = -90.0f;
     float pitch;
     float last_x_mouse_pos;

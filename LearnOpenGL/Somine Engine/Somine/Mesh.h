@@ -20,6 +20,8 @@ public:
 
     float m_scale = 1.0f;
 
+    void moveTo(float x, float y, float z);
+    void rotate(float angle, glm::vec3 axis);
     void generateBuffers();
     std::vector<GLfloat> getVertices();
     std::vector<GLuint> getIndices();

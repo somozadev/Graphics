@@ -1,5 +1,7 @@
 ﻿#include "Mesh.h"
 
+#include <glm/glm/gtc/matrix_transform.hpp>
+
 Mesh::Mesh()
 {
     m_model_matrix = glm::mat4(m_scale);
@@ -46,6 +48,17 @@ GLuint64 Mesh::getIndicesSize()
 glm::mat4 Mesh::getModelMatrix()
 {
     return m_model_matrix;
+}
+
+void Mesh::moveTo(float x, float y, float z)
+{
+    m_model_matrix = glm::mat4(1.0f);
+    m_model_matrix = glm::translate(m_model_matrix, glm::vec3(x, y, z));
+}
+
+auto Mesh::rotate(float angle, glm::vec3 axis) -> void
+{
+    m_model_matrix = glm::rotate(m_model_matrix, glm::radians(angle), axis);
 }
 
 Mesh::~Mesh()

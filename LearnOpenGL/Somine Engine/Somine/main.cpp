@@ -39,7 +39,7 @@ int main()
     while (!window.shouldClose())
     {
         window.pollEvents();
-        renderer.update(0.0f);
+        renderer.update();
         window.swapBuffers();
     }
     //
