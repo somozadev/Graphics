@@ -5,9 +5,13 @@
 
 #include "Helper.h"
 #include "primitives/CubePrimitive.h"
+#include "primitives/PlanePrimitive.h"
+#include "primitives/PyramidPrimitive.h"
+#include "primitives/SpherePrimitive.h"
+
 
 Renderer::Renderer(const char* vertex_path, const char* fragment_path, Window* window): m_shaders(vertex_path,
-        fragment_path), m_camera(window)
+                                                                                                  fragment_path), m_camera(window)
 {
     ref_window = window;
     bg_color = {0.1f, 0.05f, 0.1f, 1.0f};
@@ -20,8 +24,14 @@ void Renderer::init()
     Helper::initRnd();
     for (size_t i = 0; i < 1; ++i)
     {
-        CubePrimitive m_cube;
-        meshes.push_back(m_cube);
+        // CubePrimitive m_cube;
+        // meshes.push_back(m_cube);
+        // PyramidPrimitive m_pyramid;
+        // meshes.push_back(m_pyramid);
+        // SpherePrimitive m_sphere;
+        // meshes.push_back(m_sphere);
+        PlanePrimitive m_plane(10.0f, 10.0f);
+        meshes.push_back(m_plane);
     }
 }
 

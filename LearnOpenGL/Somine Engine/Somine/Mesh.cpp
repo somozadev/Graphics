@@ -2,7 +2,7 @@
 
 Mesh::Mesh()
 {
-    m_model_matrix = glm::mat4(1.0f);
+    m_model_matrix = glm::mat4(m_scale);
 }
 
 

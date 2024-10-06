@@ -24,7 +24,6 @@ CubePrimitive::CubePrimitive()
         3, 2, 6, 6, 7, 3, // Top face
         5, 1, 0, 0, 4, 5, // Bottom face
     };
-    m_model_matrix = glm::rotate(glm::mat4(1.0f), glm::radians(-25.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     m_indicesSize = m_indices.size();
     generateBuffers();
 }
