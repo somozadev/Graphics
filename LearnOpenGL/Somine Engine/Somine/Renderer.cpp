@@ -83,6 +83,8 @@ void Renderer::update()
         glDrawElements(GL_TRIANGLES, meshes[i].getIndicesSize(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
+
+    if (!m_see_grid) return;
     glBindVertexArray(m_grid.m_VAO);
     m_grid.moveTo(0, 0, 0);
     m_grid.rotate(45.0f, glm::vec3(0, 1, 0));

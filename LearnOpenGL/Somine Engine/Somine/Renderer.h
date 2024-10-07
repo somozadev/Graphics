@@ -23,6 +23,7 @@ private:
     float last_frame; 
     
     bool m_wireframe{false};
+    bool m_see_grid{true};
     Window* ref_window;
 
 public:
