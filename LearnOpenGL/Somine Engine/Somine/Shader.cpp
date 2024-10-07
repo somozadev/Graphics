@@ -12,6 +12,10 @@
 #include <glm/glm/gtc/type_ptr.inl>
 
 
+Shader::Shader()
+{
+}
+
 Shader::Shader(const char* vertex_path, const char* fragment_path)
 {
     std::string vertex_code; 

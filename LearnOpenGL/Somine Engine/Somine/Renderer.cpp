@@ -10,21 +10,30 @@
 #include "primitives/SpherePrimitive.h"
 
 
-Renderer::Renderer(const char* vertex_path, const char* fragment_path, Window* window): m_shaders(vertex_path,
-        fragment_path), m_camera(window)
+Renderer::Renderer(Window* window) : m_camera(window)
 {
     ref_window = window;
     bg_color = {0.1f, 0.05f, 0.1f, 1.0f};
     init();
+    initShadersMap();
 }
 
+void Renderer::initShadersMap()
+{
+    m_shaders.insert({"default", Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl")});
+    m_shaders.insert({"grid", Shader("shaders/grid/vertex_shader.glsl", "shaders/grid/fragment_shader.glsl")});
+}
+
+
 void Renderer::init()
-//TODO: this should probably be done for each mesh, as each need its own vao vbo ebo (unless batch drawcalling?)
+//TODO: this should probably be done for each mesh (?), as each need its own vao vbo ebo (unless batch drawcalling?)
 {
     Helper::initRnd();
 
     PlanePrimitive plane(10.0f, 10.0f);
     meshes.push_back(plane);
+
+    m_grid = Grid(20000, 1.0f);
 
     CubePrimitive m_cube;
     meshes.push_back(m_cube);
@@ -33,6 +42,7 @@ void Renderer::init()
     SpherePrimitive m_sphere;
     meshes.push_back(m_sphere);
 }
+
 
 void Renderer::update()
 {
@@ -43,13 +53,15 @@ void Renderer::update()
     updateProjection();
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPolygonMode(GL_FRONT_AND_BACK, m_wireframe ? GL_LINE : GL_FILL);
     glClearColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 view = m_camera.getViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), m_aspectRatio, 0.1f, 100.0f);
-    m_shaders.use();
+    m_shaders["default"].use();
     m_camera.update(delta_time);
     int x = -4;
     float angle = 20;
@@ -64,12 +76,21 @@ void Renderer::update()
         }
 
         glm::mat4 mvp = projection * view * meshes[i].getModelMatrix();
-        m_shaders.setUniformMatrix4fv("mvp", mvp);
+        m_shaders["default"].setUniformMatrix4fv("mvp", mvp);
+
 
         glBindVertexArray(meshes[i].m_VAO);
         glDrawElements(GL_TRIANGLES, meshes[i].getIndicesSize(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }
+    glBindVertexArray(m_grid.m_VAO);
+    m_grid.moveTo(0, 0, 0);
+    m_grid.rotate(45.0f, glm::vec3(0, 1, 0));
+    glm::mat4 mvp = projection * view * m_grid.getModelMatrix();
+    m_shaders["grid"].use();
+    m_shaders["grid"].setUniformMatrix4fv("mvp", mvp);
+    glDrawArrays(GL_LINES, 0, m_grid.getVertices().size() / 3);
+    glBindVertexArray(0);
 }
 
 void Renderer::updateProjection()
@@ -84,5 +105,6 @@ Renderer::~Renderer()
 {
     //glDelete* any other globject used
     ref_window = nullptr;
-    glDeleteProgram(m_shaders.id);
+    glDeleteProgram(m_shaders["default"].id);
+    glDeleteProgram(m_shaders["grid"].id);
 }

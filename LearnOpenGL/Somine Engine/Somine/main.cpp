@@ -2,14 +2,8 @@
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 
-#include <glm/glm/glm.hpp>
-#include <glm/glm/gtc/matrix_transform.hpp>
-#include <glm/glm/gtc/type_ptr.hpp>
-
 
 #include "Renderer.h"
-#include "Shader.h"
-#include "TextureManager.h"
 #include "Window.h"
 
 // void processInput(GLFWwindow* window)
@@ -30,7 +24,7 @@ int main()
 
 
     Window window(640, 360, "Somine Renderer");
-    Renderer renderer = Renderer("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl", &window);
+    Renderer renderer = Renderer(&window);
    
     // //if this is called before glad is initialize, errors
     // unsigned int texture_one = TextureManager::loadTexture("textures/container.jpg", GL_RGB);

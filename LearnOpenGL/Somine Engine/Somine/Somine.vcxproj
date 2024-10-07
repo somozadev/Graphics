@@ -141,6 +141,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="primitives\CubePrimitive.cpp" />
+    <ClCompile Include="primitives\grid\Grid.cpp" />
     <ClCompile Include="primitives\PlanePrimitive.cpp" />
     <ClCompile Include="primitives\PyramidPrimitive.cpp" />
     <ClCompile Include="primitives\SpherePrimitive.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="primitives\CubePrimitive.h" />
+    <ClInclude Include="primitives\grid\Grid.h" />
     <ClInclude Include="primitives\PlanePrimitive.h" />
     <ClInclude Include="primitives\PyramidPrimitive.h" />
     <ClInclude Include="primitives\SpherePrimitive.h" />
@@ -165,6 +167,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="shaders\fragment_shader.glsl" />
+    <Content Include="shaders\grid\fragment_shader.glsl" />
+    <Content Include="shaders\grid\vertex_shader.glsl" />
     <Content Include="shaders\vertex_shader.glsl" />
     <Content Include="textures\container.jpg" />
     <Content Include="textures\happy.png" />
