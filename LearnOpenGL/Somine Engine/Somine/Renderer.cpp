@@ -3,7 +3,9 @@
 #include <glm/glm/detail/type_mat4x4.hpp>
 #include <glm/glm/gtc/matrix_transform.hpp>
 
+#include <iostream>
 #include "Helper.h"
+#include "assimpLoader/Model.h"
 #include "primitives/CubePrimitive.h"
 #include "primitives/PlanePrimitive.h"
 #include "primitives/PyramidPrimitive.h"
@@ -30,6 +32,7 @@ void Renderer::init()
 {
     Helper::initRnd();
 
+    
     PlanePrimitive plane(10.0f, 10.0f);
     meshes.push_back(plane);
 
@@ -46,6 +49,7 @@ void Renderer::init()
 
 void Renderer::update()
 {
+    Model ourModel(Helper::getPath("backpack/backpack.obj"));
     current_frame = glfwGetTime();
     delta_time = current_frame - last_frame;
     last_frame = current_frame;
@@ -93,6 +97,15 @@ void Renderer::update()
     m_shaders["grid"].setUniformMatrix4fv("mvp", mvp);
     glDrawArrays(GL_LINES, 0, m_grid.getVertices().size() / 3);
     glBindVertexArray(0);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+    m_shaders["default"].setUniformMatrix4fv("model", model);
+    ourModel.draw(m_shaders["default"]);
+
+
+    
 }
 
 void Renderer::updateProjection()

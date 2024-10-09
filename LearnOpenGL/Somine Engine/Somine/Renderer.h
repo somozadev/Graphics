@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 
 #include "Camera.h"
-#include "Mesh.h"
+#include "OldMesh.h"
 #include "Shader.h"
 #include "Window.h"
 #include "primitives/grid/Grid.h"
@@ -13,11 +13,11 @@ class Renderer
 {
 private:
     // GLuint m_program{0};
-    Mesh m_grid;
+    OldMesh m_grid;
     std::unordered_map<std::string, Shader> m_shaders;
     Camera m_camera;
     std::vector<GLfloat> bg_color;
-    std::vector<Mesh> meshes;
+    std::vector<OldMesh> meshes;
 
     float current_frame;
     float last_frame; 

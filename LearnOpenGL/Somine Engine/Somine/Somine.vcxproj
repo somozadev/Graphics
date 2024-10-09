@@ -114,7 +114,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;assimp-vc143-mtd.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)Libraries/lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -135,11 +135,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="assimpLoader\Material.cpp" />
+    <ClCompile Include="assimpLoader\Mesh.cpp" />
+    <ClCompile Include="assimpLoader\Model.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="OldMesh.cpp" />
     <ClCompile Include="primitives\CubePrimitive.cpp" />
     <ClCompile Include="primitives\grid\Grid.cpp" />
     <ClCompile Include="primitives\PlanePrimitive.cpp" />
@@ -151,9 +154,14 @@
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="assimpLoader\Material.h" />
+    <ClInclude Include="assimpLoader\Mesh.h" />
+    <ClInclude Include="assimpLoader\Model.h" />
+    <ClInclude Include="assimpLoader\Texture.h" />
+    <ClInclude Include="assimpLoader\Vertex.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Helper.h" />
-    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="OldMesh.h" />
     <ClInclude Include="primitives\CubePrimitive.h" />
     <ClInclude Include="primitives\grid\Grid.h" />
     <ClInclude Include="primitives\PlanePrimitive.h" />
@@ -166,6 +174,16 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="models\backpack\ao.jpg" />
+    <Content Include="models\backpack\backpack.mtl" />
+    <Content Include="models\backpack\backpack.obj" />
+    <Content Include="models\backpack\diffuse.jpg" />
+    <Content Include="models\backpack\normal.png" />
+    <Content Include="models\backpack\roughness.jpg" />
+    <Content Include="models\backpack\source_attribution.txt" />
+    <Content Include="models\backpack\specular.jpg" />
+    <Content Include="shaders\assimp\fragment_shader.glsl" />
+    <Content Include="shaders\assimp\vertex_shader.glsl" />
     <Content Include="shaders\fragment_shader.glsl" />
     <Content Include="shaders\grid\fragment_shader.glsl" />
     <Content Include="shaders\grid\vertex_shader.glsl" />

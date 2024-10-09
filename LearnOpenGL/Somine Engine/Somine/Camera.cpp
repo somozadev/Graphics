@@ -43,7 +43,6 @@ void Camera::translate(float delta_time)
     if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_D) == GLFW_PRESS)
         m_position += glm::normalize(glm::cross(m_front, m_up)) * m_speed;
 
-
     m_view_matrix = glm::lookAt(m_position, m_position + m_front, m_up);
     return;
 }
