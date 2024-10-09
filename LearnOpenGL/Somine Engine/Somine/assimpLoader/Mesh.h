@@ -12,10 +12,7 @@ public:
     std::vector<Vertex> m_vertices;
     std::vector<GLuint> m_indices;
     std::vector<Texture> m_textures;
-
-    size_t material_index;
     
-    GLuint m_VAO;
 
     Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
     void draw(Shader& shader);
@@ -23,6 +20,7 @@ public:
 private:
     GLuint m_VBO;
     GLuint m_EBO;
+    GLuint m_VAO;
 
     void setupMesh();
 };

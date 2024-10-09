@@ -117,6 +117,9 @@
       <AdditionalDependencies>glfw3.lib;assimp-vc143-mtd.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)Libraries/lib</AdditionalLibraryDirectories>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y "C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Libraries\include\assimp-vc143-mtd.dll" "$(OutDir)" &amp;&amp; xcopy /E /I /Y "C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\resources" "$(OutDir)resources\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -143,11 +146,6 @@
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OldMesh.cpp" />
-    <ClCompile Include="primitives\CubePrimitive.cpp" />
-    <ClCompile Include="primitives\grid\Grid.cpp" />
-    <ClCompile Include="primitives\PlanePrimitive.cpp" />
-    <ClCompile Include="primitives\PyramidPrimitive.cpp" />
-    <ClCompile Include="primitives\SpherePrimitive.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="TextureManager.cpp" />
@@ -162,11 +160,6 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="OldMesh.h" />
-    <ClInclude Include="primitives\CubePrimitive.h" />
-    <ClInclude Include="primitives\grid\Grid.h" />
-    <ClInclude Include="primitives\PlanePrimitive.h" />
-    <ClInclude Include="primitives\PyramidPrimitive.h" />
-    <ClInclude Include="primitives\SpherePrimitive.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stb_image.h" />
@@ -174,22 +167,7 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="models\backpack\ao.jpg" />
-    <Content Include="models\backpack\backpack.mtl" />
-    <Content Include="models\backpack\backpack.obj" />
-    <Content Include="models\backpack\diffuse.jpg" />
-    <Content Include="models\backpack\normal.png" />
-    <Content Include="models\backpack\roughness.jpg" />
-    <Content Include="models\backpack\source_attribution.txt" />
-    <Content Include="models\backpack\specular.jpg" />
-    <Content Include="shaders\assimp\fragment_shader.glsl" />
-    <Content Include="shaders\assimp\vertex_shader.glsl" />
-    <Content Include="shaders\fragment_shader.glsl" />
-    <Content Include="shaders\grid\fragment_shader.glsl" />
-    <Content Include="shaders\grid\vertex_shader.glsl" />
-    <Content Include="shaders\vertex_shader.glsl" />
-    <Content Include="textures\container.jpg" />
-    <Content Include="textures\happy.png" />
+    <Folder Include="resources\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

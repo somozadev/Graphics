@@ -9,9 +9,9 @@ struct Vertex
     glm::vec3 position;
     glm::vec3 normal;
     glm::vec2 tex_coords;
-    glm::vec3 tangent; // no clue what's this for yet
-    glm::vec3 bit_tangent; // no clue what's this for yet
-
-    int m_boneIDs[MAX_BONE_INFLUENCE];
-    int m_weights[MAX_BONE_INFLUENCE];
+    // glm::vec3 tangent; // no clue what's this for yet
+    // glm::vec3 bit_tangent; // no clue what's this for yet
+    //
+    // int m_boneIDs[MAX_BONE_INFLUENCE];
+    // int m_weights[MAX_BONE_INFLUENCE];
 };

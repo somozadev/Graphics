@@ -4,9 +4,8 @@
 
 #include "../stb_image.h"
 
-Model::Model(std::string const& path, bool gammaCorrection) : m_gamma_correction(gammaCorrection)
+Model::Model(std::string const& path)
 {
-    stbi_set_flip_vertically_on_load(true);
     loadModel(path);
 }
 
@@ -19,9 +18,6 @@ void Model::draw(Shader& shader)
 void Model::loadModel(std::string const& path)
 {
     Assimp::Importer importer;
-    
-    importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);
-    importer.SetPropertyInteger(AI_CONFIG_GLOB_MEASURE_TIME, 1);
 
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -37,7 +33,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
 {
     for (GLuint i = 0; i < node->mNumMeshes; i++)
     {
-        aiMesh* mesh = scene->mMeshes[node->mNumChildren, i++];
+        aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         m_meshes.push_back(processMesh(mesh, scene));
     }
     for (GLuint i = 0; i < node->mNumChildren; i++)
@@ -55,15 +51,15 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     {
         Vertex vertex;
         glm::vec3 vector;
-        vector.x = mesh->mVertices->x;
-        vector.y = mesh->mVertices->y;
-        vector.z = mesh->mVertices->z;
+        vector.x = mesh->mVertices[i].x;
+        vector.y = mesh->mVertices[i].y;
+        vector.z = mesh->mVertices[i].z;
         vertex.position = vector;
         if (mesh->HasNormals())
         {
-            vector.x = mesh->mNormals->x;
-            vector.y = mesh->mNormals->y;
-            vector.z = mesh->mNormals->z;
+            vector.x = mesh->mNormals[i].x;
+            vector.y = mesh->mNormals[i].y;
+            vector.z = mesh->mNormals[i].z;
             vertex.normal = vector;
         }
         if (mesh->mTextureCoords[0])
@@ -75,19 +71,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         }
         else
             vertex.tex_coords = glm::vec2(0.0f, 0.0f);
-        if (mesh->HasTangentsAndBitangents()) // Verifica si tiene tangentes y bitangentes
-        {
-            vector.x = mesh->mTangents[i].x;
-            vector.y = mesh->mTangents[i].y;
-            vector.z = mesh->mTangents[i].z;
-            vertex.tangent = vector;
 
-
-            vector.x = mesh->mBitangents[i].x;
-            vector.y = mesh->mBitangents[i].y;
-            vector.z = mesh->mBitangents[i].z;
-            vertex.bit_tangent = vector;
-        }
         vertices.push_back(vertex);
     }
     for (GLuint i = 0; i < mesh->mNumFaces; i++)
@@ -96,7 +80,6 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         for (unsigned int j = 0; j < face.mNumIndices; j++)
             indices.push_back(face.mIndices[j]);
     }
-
     aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
     /*
      * Texture naming convention in the shaders assumed:
@@ -114,7 +97,6 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
     std::vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
     return Mesh(vertices, indices, textures);
 }
 

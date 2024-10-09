@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include "Helper.h"
+#include "stb_image.h"
 #include "assimpLoader/Model.h"
 #include "primitives/CubePrimitive.h"
 #include "primitives/PlanePrimitive.h"
@@ -22,99 +23,95 @@ Renderer::Renderer(Window* window) : m_camera(window)
 
 void Renderer::initShadersMap()
 {
-    m_shaders.insert({"default", Shader("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl")});
-    m_shaders.insert({"grid", Shader("shaders/grid/vertex_shader.glsl", "shaders/grid/fragment_shader.glsl")});
+    m_shaders.insert({"default", Shader("resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl")});
+    m_shaders.insert({"grid", Shader("resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")});
+    m_shaders.insert({"assimp", Shader("resources/shaders/assimp/vertex_shader.glsl", "resources/shaders/assimp/fragment_shader.glsl")});
 }
 
 
 void Renderer::init()
-//TODO: this should probably be done for each mesh (?), as each need its own vao vbo ebo (unless batch drawcalling?)
 {
     Helper::initRnd();
+    stbi_set_flip_vertically_on_load(true);
 
-    
-    PlanePrimitive plane(10.0f, 10.0f);
-    meshes.push_back(plane);
-
-    m_grid = Grid(20000, 1.0f);
-
-    CubePrimitive m_cube;
-    meshes.push_back(m_cube);
-    PyramidPrimitive m_pyramid;
-    meshes.push_back(m_pyramid);
-    SpherePrimitive m_sphere;
-    meshes.push_back(m_sphere);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // PlanePrimitive plane(10.0f, 10.0f);
+    // meshes.push_back(plane);
+    // CubePrimitive m_cube;
+    // meshes.push_back(m_cube);
+    // PyramidPrimitive m_pyramid;
+    // meshes.push_back(m_pyramid);
+    // SpherePrimitive m_sphere;
+    // meshes.push_back(m_sphere);
 }
 
 
 void Renderer::update()
 {
-    Model ourModel(Helper::getPath("backpack/backpack.obj"));
-    current_frame = glfwGetTime();
+    current_frame = static_cast<float>(glfwGetTime());
     delta_time = current_frame - last_frame;
     last_frame = current_frame;
+    m_camera.update(delta_time);
 
-    updateProjection();
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPolygonMode(GL_FRONT_AND_BACK, m_wireframe ? GL_LINE : GL_FILL);
     glClearColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 view = m_camera.getViewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), m_aspectRatio, 0.1f, 100.0f);
-    m_shaders["default"].use();
-    m_camera.update(delta_time);
-    int x = -4;
-    float angle = 20;
-    for (size_t i = 0; i < meshes.size(); ++i)
-    {
-        if (i > 0)
-        {
-            meshes[i].moveTo(x, 1, -2);
-            x += 4;
-            meshes[i].rotate(angle, glm::vec3(1.0f, 1.0f, 1.0f));
-            angle += 30;
-        }
-
-        glm::mat4 mvp = projection * view * meshes[i].getModelMatrix();
-        m_shaders["default"].setUniformMatrix4fv("mvp", mvp);
-
-
-        glBindVertexArray(meshes[i].m_VAO);
-        glDrawElements(GL_TRIANGLES, meshes[i].getIndicesSize(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-    }
-
-    if (!m_see_grid) return;
-    glBindVertexArray(m_grid.m_VAO);
-    m_grid.moveTo(0, 0, 0);
-    m_grid.rotate(45.0f, glm::vec3(0, 1, 0));
-    glm::mat4 mvp = projection * view * m_grid.getModelMatrix();
-    m_shaders["grid"].use();
-    m_shaders["grid"].setUniformMatrix4fv("mvp", mvp);
-    glDrawArrays(GL_LINES, 0, m_grid.getVertices().size() / 3);
-    glBindVertexArray(0);
-
+    m_shaders["assimp"].use();
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-    m_shaders["default"].setUniformMatrix4fv("model", model);
-    ourModel.draw(m_shaders["default"]);
+    glm::mat4 view = m_camera.getViewMatrix();
+    glm::mat4 projection = m_camera.getProjectionMatrix();
+
+    m_shaders["assimp"].setUniformMatrix4fv("view", view);
+    m_shaders["assimp"].setUniformMatrix4fv("projection", projection);
+
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(270.0f), glm::vec3(1, 0, 0));
+    m_shaders["assimp"].setUniformMatrix4fv("model", model);
 
 
-    
+    // cup.draw(m_shaders["assimp"]);
+    backpack.draw(m_shaders["assimp"]);
+    // cube.draw(m_shaders["assimp"]);
+
+    /*
+    // m_shaders["default"].use();
+    // int x = -4;
+    // float angle = 20;
+    // for (size_t i = 0; i < meshes.size(); ++i)
+    // {
+    //     if (i > 0)
+    //     {
+    //         meshes[i].moveTo(x, 1, -2);
+    //         x += 4;
+    //         meshes[i].rotate(angle, glm::vec3(1.0f, 1.0f, 1.0f));
+    //         angle += 30;
+    //     }
+    //
+    //     glm::mat4 mvp = projection * view * meshes[i].getModelMatrix();
+    //     m_shaders["default"].setUniformMatrix4fv("mvp", mvp);
+    //
+    //
+    //     glBindVertexArray(meshes[i].m_VAO);
+    //     glDrawElements(GL_TRIANGLES, meshes[i].getIndicesSize(), GL_UNSIGNED_INT, 0);
+    //     glBindVertexArray(0);
+    // }
+    */
+    // if (!m_see_grid) return;
+    // glBindVertexArray(m_grid.m_VAO);
+    // m_grid.moveTo(0, 0, 0);
+    // m_grid.rotate(45.0f, glm::vec3(0, 1, 0));
+    // glm::mat4 mvp = projection * view * m_grid.getModelMatrix();
+    // m_shaders["grid"].use();
+    // m_shaders["grid"].setUniformMatrix4fv("mvp", mvp);
+    // glDrawArrays(GL_LINES, 0, m_grid.getVertices().size() / 3);
+    // glBindVertexArray(0);
 }
 
-void Renderer::updateProjection()
-{
-    int width = ref_window->m_width;
-    int height = ref_window->m_height;
-    if (height == 0) height = 1;
-    m_aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-}
 
 Renderer::~Renderer()
 {
@@ -122,4 +119,5 @@ Renderer::~Renderer()
     ref_window = nullptr;
     glDeleteProgram(m_shaders["default"].id);
     glDeleteProgram(m_shaders["grid"].id);
+    glDeleteProgram(m_shaders["assimp"].id);
 }

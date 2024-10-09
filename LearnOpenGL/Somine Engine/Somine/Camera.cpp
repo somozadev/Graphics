@@ -21,6 +21,7 @@ Camera::Camera(Window* window): ref_window(window)
     m_up = glm::normalize(glm::cross(m_direction, m_right));
 
     m_view_matrix = glm::lookAt(m_position, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    m_projection_matrix = glm::perspective(glm::radians(45.0f), m_aspectRatio, 0.1f, 100.0f);
 }
 
 glm::mat4 Camera::getViewMatrix()
@@ -28,12 +29,17 @@ glm::mat4 Camera::getViewMatrix()
     return m_view_matrix;
 }
 
+glm::mat4 Camera::getProjectionMatrix()
+{
+    m_projection_matrix = glm::perspective(glm::radians(45.0f), m_aspectRatio, 0.1f, 100.0f);
+    return m_projection_matrix;
+}
+
 void Camera::translate(float delta_time)
 {
     if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         m_speed = 5.0f * delta_time;
     else m_speed = 1.0f * delta_time;
-
     if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_W) == GLFW_PRESS)
         m_position += m_speed * m_front;
     if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_S) == GLFW_PRESS)
@@ -44,7 +50,6 @@ void Camera::translate(float delta_time)
         m_position += glm::normalize(glm::cross(m_front, m_up)) * m_speed;
 
     m_view_matrix = glm::lookAt(m_position, m_position + m_front, m_up);
-    return;
 }
 
 void Camera::rotate()
@@ -99,6 +104,7 @@ void Camera::updateCameraVectors()
 
 void Camera::update(float delta_time)
 {
+    updateAspectRatio();
     if (!spin)
     {
         translate(delta_time);
@@ -109,6 +115,14 @@ void Camera::update(float delta_time)
     camX = sin(glfwGetTime()) * radius;
     camY = cos(glfwGetTime()) * radius;
     m_view_matrix = glm::lookAt(glm::vec3(camX, 0.0f, camY), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+}
+
+void Camera::updateAspectRatio()
+{
+    int width = ref_window->m_width;
+    int height = ref_window->m_height;
+    if (height == 0) height = 1;
+    m_aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 }
 
 Camera::~Camera()

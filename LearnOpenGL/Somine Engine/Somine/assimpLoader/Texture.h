@@ -3,7 +3,7 @@
 
 struct Texture
 {
-    unsigned int id;
+    GLuint id;
     std::string type;
     std::string path; 
 };
