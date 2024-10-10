@@ -1,3 +1,4 @@
+#include <iostream>
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
 
@@ -9,6 +10,7 @@
 int main()
 {
 
+    std::cout << "C++ version: " << __cplusplus << std::endl;
 
     Window window(640, 360, "Somine Renderer");
     Renderer renderer = Renderer(&window);

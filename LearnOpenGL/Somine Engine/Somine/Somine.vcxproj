@@ -180,10 +180,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="resources\models\ar\Ar-47.fbx" />
-    <Content Include="resources\models\ar\textures\Ar_47_AR-47_BaseColor.1001.png" />
-    <Content Include="resources\models\ar\textures\Ar_47_AR-47_Metallic.1001.png" />
-    <Content Include="resources\models\ar\textures\Ar_47_AR-47_Normal.1001.png" />
-    <Content Include="resources\models\ar\textures\Ar_47_AR-47_Roughness.1001.png" />
+    <Content Include="resources\models\ar\Ar_47_AR-47_BaseColor.1001.png" />
+    <Content Include="resources\models\ar\Ar_47_AR-47_Metallic.1001.png" />
+    <Content Include="resources\models\ar\Ar_47_AR-47_Normal.1001.png" />
+    <Content Include="resources\models\ar\Ar_47_AR-47_Roughness.1001.png" />
     <Content Include="resources\models\backpack\ao.jpg" />
     <Content Include="resources\models\backpack\backpack.mtl" />
     <Content Include="resources\models\backpack\backpack.obj" />

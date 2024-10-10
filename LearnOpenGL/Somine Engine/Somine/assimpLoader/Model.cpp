@@ -1,6 +1,8 @@
 ﻿#include "Model.h"
 
 #include <iostream>
+#include <__msvc_filebuf.hpp>
+#include <__msvc_filebuf.hpp>
 
 #include "../stb_image.h"
 
@@ -121,11 +123,13 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
 {
     std::vector<Texture> textures;
-    int count =  mat->GetTextureCount(type);
-    for (GLuint i = 0; i < count; i++)
+    std::cout <<  mat->GetTextureCount(type) << typeName << endl;
+
+    for (GLuint i = 0; i < mat->GetTextureCount(type); i++)
     {
         aiString str;
         mat->GetTexture(type, i, &str);
+
         bool skipIfLoadedAlready = false;
         for (GLuint j = 0; j < m_textures_loaded.size(); j++)
         {
@@ -138,6 +142,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
         }
         if (!skipIfLoadedAlready)
         {
+            // std::cout << str.C_Str() << endl;
             Texture texture;
             texture.id = textureFromFile(str.C_Str(), this->m_directory);
             texture.type = typeName;
@@ -146,24 +151,45 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
             m_textures_loaded.push_back(texture);
         }
     }
-  if (textures.empty())
-    {
-        //how can i assign manually if the meshes don't reference the material textures correctly? 
-    }
-  
+
     return textures;
 }
 
 unsigned Model::textureFromFile(const char* path, const std::string& directory)
 {
     std::string filename = std::string(path);
-    filename = directory + '/' + filename;
+    //sometimes the path will be absolute based on the pc that was made the fbx. To fix it:
+    bool isAbsolute = (filename.find(":") != std::string::npos) || (filename[0] == '/') || (filename[0] == '\\');
+    if (isAbsolute)
+    {
+        // If it's an absolute path, strip it to just the filename (after the last '/' or '\\')
+        size_t pos = filename.find_last_of("/\\");
+        if (pos != std::string::npos)
+        {
+            filename = filename.substr(pos + 1); // Extract the file name only
+        }
+    }
+
+    std::string fullPath = directory + '/' + filename;
+    std::string textureSubdirPath = directory + "/textures/" + filename;
 
     GLuint textureID;
     glGenTextures(1, &textureID);
 
     int width, height, nr_components;
-    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nr_components, 0);
+    unsigned char* data = stbi_load(fullPath.c_str(), &width, &height, &nr_components, 0);
+
+    if (!data)
+    {
+        data = stbi_load(textureSubdirPath.c_str(), &width, &height, &nr_components, 0);
+        if (!data)
+        {
+            std::cout << "Texture failed to load at path: " << path << std::endl;
+            stbi_image_free(data);
+            return textureID; // Return an invalid texture ID
+        }
+    }
+
     if (data)
     {
         GLenum format;
