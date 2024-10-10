@@ -35,7 +35,6 @@ void Renderer::initShadersMap()
     });
 }
 
-
 void Renderer::init()
 {
     Helper::initRnd();
@@ -46,17 +45,8 @@ void Renderer::init()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    
+
     m_grid = Grid(20000, 1.0f);
-    
-    // PlanePrimitive plane(10.0f, 10.0f);
-    // meshes.push_back(plane);
-    // CubePrimitive m_cube;
-    // meshes.push_back(m_cube);
-    // PyramidPrimitive m_pyramid;
-    // meshes.push_back(m_pyramid);
-    // SpherePrimitive m_sphere;
-    // meshes.push_back(m_sphere);
 }
 
 
@@ -83,36 +73,35 @@ void Renderer::update()
     ar47.transform.rotate(-90.0f, 0.0f, 0.0f);
     ar47.draw(m_shaders["assimp"]);
 
-    // backpack.transform.move(0.0f, 0.0f, 0.0f);
-    // backpack.transform.scale(1.0f, 1.0f, 1.0f);
-    // backpack.transform.rotate(0.0f, 0.0f, 0.0f);
-    // backpack.draw(m_shaders["assimp"]);
-    //
-    // cup.transform.move(2.0f, 0.0f, 0.0f);
-    // cup.transform.scale(1.5f, 1.5f, 1.5f);
-    // cup.transform.rotate(270.0f, 0.0f, 0.0f);
-    // cup.draw(m_shaders["assimp"]);
-    //
-    // primitiveTestCube.transform.move(-5.0f, 0.0f, 0.0f);
-    // primitiveTestCube.transform.scale(0.5f, 0.5f, 0.5f);
-    // primitiveTestCube.transform.rotate(0.0f, 0.0f, 0.0f);
-    // primitiveTestCube.draw(m_shaders["assimp"]);
-    //
-    // primitiveTestSphere.transform.move(-10.0f, 0.0f, 0.0f);
-    // primitiveTestSphere.transform.scale(0.5f, 0.5f, 0.5f);
-    // primitiveTestSphere.transform.rotate(0.0f, 0.0f, 0.0f);
-    // primitiveTestSphere.draw(m_shaders["assimp"]);
-    //
-    // primitiveTestPlane.transform.move(10.0f, 0.0f, 0.0f);
-    // primitiveTestPlane.transform.scale(0.5f, 0.5f, 0.5f);
-    // primitiveTestPlane.transform.rotate(0.0f, 0.0f, 0.0f);
-    // primitiveTestPlane.draw(m_shaders["assimp"]);
-    //
-    // primitiveTestPyramid.transform.move(15.0f, 0.0f, 0.0f);
-    // primitiveTestPyramid.transform.scale(0.5f, 0.5f, 0.5f);
-    // primitiveTestPyramid.transform.rotate(0.0f, 0.0f, 0.0f);
-    // primitiveTestPyramid.draw(m_shaders["assimp"]);
+    backpack.transform.move(0.0f, 0.0f, 0.0f);
+    backpack.transform.scale(1.0f, 1.0f, 1.0f);
+    backpack.transform.rotate(0.0f, 0.0f, 0.0f);
+    backpack.draw(m_shaders["assimp"]);
 
+    cup.transform.move(2.0f, 0.0f, 0.0f);
+    cup.transform.scale(1.5f, 1.5f, 1.5f);
+    cup.transform.rotate(270.0f, 0.0f, 0.0f);
+    cup.draw(m_shaders["assimp"]);
+
+    primitiveTestCube.transform.move(-5.0f, 0.0f, 0.0f);
+    primitiveTestCube.transform.scale(0.5f, 0.5f, 0.5f);
+    primitiveTestCube.transform.rotate(0.0f, 0.0f, 0.0f);
+    primitiveTestCube.draw(m_shaders["assimp"]);
+
+    primitiveTestSphere.transform.move(-10.0f, 0.0f, 0.0f);
+    primitiveTestSphere.transform.scale(0.5f, 0.5f, 0.5f);
+    primitiveTestSphere.transform.rotate(0.0f, 0.0f, 0.0f);
+    primitiveTestSphere.draw(m_shaders["assimp"]);
+
+    primitiveTestPlane.transform.move(10.0f, 0.0f, 0.0f);
+    primitiveTestPlane.transform.scale(0.5f, 0.5f, 0.5f);
+    primitiveTestPlane.transform.rotate(0.0f, 0.0f, 0.0f);
+    primitiveTestPlane.draw(m_shaders["assimp"]);
+
+    primitiveTestPyramid.transform.move(15.0f, 0.0f, 0.0f);
+    primitiveTestPyramid.transform.scale(0.5f, 0.5f, 0.5f);
+    primitiveTestPyramid.transform.rotate(0.0f, 0.0f, 0.0f);
+    primitiveTestPyramid.draw(m_shaders["assimp"]);
 
 
     if (!m_see_grid) return;
