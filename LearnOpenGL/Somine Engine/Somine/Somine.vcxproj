@@ -118,7 +118,7 @@
       <AdditionalLibraryDirectories>$(ProjectDir)Libraries/lib</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Libraries\include\assimp-vc143-mtd.dll" "$(OutDir)" &amp;&amp; xcopy /E /I /Y "C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\resources" "$(OutDir)resources\"</Command>
+      <Command>xcopy /Y "$(ProjectDir)Libraries\include\assimp-vc143-mtd.dll" "$(OutDir)" &amp;&amp; xcopy /E /I /Y "$(ProjectDir)resources" "$(OutDir)resources\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -180,10 +180,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="resources\models\ar\Ar-47.fbx" />
-    <Content Include="resources\models\ar\Ar_47_AR-47_BaseColor.1001.png" />
-    <Content Include="resources\models\ar\Ar_47_AR-47_Metallic.1001.png" />
-    <Content Include="resources\models\ar\Ar_47_AR-47_Normal.1001.png" />
-    <Content Include="resources\models\ar\Ar_47_AR-47_Roughness.1001.png" />
+    <Content Include="resources\models\ar\textures\Ar_47_AR-47_BaseColor.1001.png" />
+    <Content Include="resources\models\ar\textures\Ar_47_AR-47_Metallic.1001.png" />
+    <Content Include="resources\models\ar\textures\Ar_47_AR-47_Normal.1001.png" />
+    <Content Include="resources\models\ar\textures\Ar_47_AR-47_Roughness.1001.png" />
     <Content Include="resources\models\backpack\ao.jpg" />
     <Content Include="resources\models\backpack\backpack.mtl" />
     <Content Include="resources\models\backpack\backpack.obj" />

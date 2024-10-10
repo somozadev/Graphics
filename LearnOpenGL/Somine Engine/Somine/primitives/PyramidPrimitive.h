@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "../OldMesh.h"
+#include "../assimpLoader/Model.h"
 
-class PyramidPrimitive : public OldMesh
+class PyramidPrimitive : public Model
 {
 public:
     PyramidPrimitive();

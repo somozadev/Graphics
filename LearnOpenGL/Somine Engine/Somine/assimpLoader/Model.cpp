@@ -121,7 +121,8 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
 {
     std::vector<Texture> textures;
-    for (GLuint i = 0; i < mat->GetTextureCount(type); i++)
+    int count =  mat->GetTextureCount(type);
+    for (GLuint i = 0; i < count; i++)
     {
         aiString str;
         mat->GetTexture(type, i, &str);
@@ -145,11 +146,11 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
             m_textures_loaded.push_back(texture);
         }
     }
-
-    if (textures.empty())
+  if (textures.empty())
     {
         //how can i assign manually if the meshes don't reference the material textures correctly? 
     }
+  
     return textures;
 }
 

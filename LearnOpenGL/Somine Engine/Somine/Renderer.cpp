@@ -45,6 +45,10 @@ void Renderer::init()
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    
+    m_grid = Grid(20000, 1.0f);
+    
     // PlanePrimitive plane(10.0f, 10.0f);
     // meshes.push_back(plane);
     // CubePrimitive m_cube;
@@ -74,6 +78,11 @@ void Renderer::update()
     m_shaders["assimp"].setUniformMatrix4fv("projection", projection);
 
 
+    ar47.transform.move(-8.0f, 0.0f, 0.0f);
+    ar47.transform.scale(1.0f, 1.0f, 1.0f);
+    ar47.transform.rotate(-90.0f, 0.0f, 0.0f);
+    ar47.draw(m_shaders["assimp"]);
+
     backpack.transform.move(0.0f, 0.0f, 0.0f);
     backpack.transform.scale(1.0f, 1.0f, 1.0f);
     backpack.transform.rotate(0.0f, 0.0f, 0.0f);
@@ -84,57 +93,35 @@ void Renderer::update()
     cup.transform.rotate(270.0f, 0.0f, 0.0f);
     cup.draw(m_shaders["assimp"]);
     
-    // m_shaders["default"].use();
-    // m_shaders["default"].setUniformMatrix4fv("view", view);
-    // m_shaders["default"].setUniformMatrix4fv("projection", projection);
     primitiveTestCube.transform.move(-5.0f, 0.0f, 0.0f);
     primitiveTestCube.transform.scale(0.5f, 0.5f, 0.5f);
     primitiveTestCube.transform.rotate(0.0f, 0.0f, 0.0f);
     primitiveTestCube.draw(m_shaders["assimp"]);
     
-    primitiveTestPlane.transform.move(15.0f, 0.0f, 0.0f);
+    primitiveTestSphere.transform.move(-10.0f, 0.0f, 0.0f);
+    primitiveTestSphere.transform.scale(0.5f, 0.5f, 0.5f);
+    primitiveTestSphere.transform.rotate(0.0f, 0.0f, 0.0f);
+    primitiveTestSphere.draw(m_shaders["assimp"]);
+
+    primitiveTestPlane.transform.move(10.0f, 0.0f, 0.0f);
     primitiveTestPlane.transform.scale(0.5f, 0.5f, 0.5f);
     primitiveTestPlane.transform.rotate(0.0f, 0.0f, 0.0f);
     primitiveTestPlane.draw(m_shaders["assimp"]);
 
-    ar47.transform.move(-8.0f, 0.0f, 0.0f);
-    ar47.transform.scale(1.0f, 1.0f, 1.0f);
-    ar47.transform.rotate(-90.0f, 0.0f, 0.0f);
-    ar47.draw(m_shaders["assimp"]);
+    primitiveTestPyramid.transform.move(15.0f, 0.0f, 0.0f);
+    primitiveTestPyramid.transform.scale(0.5f, 0.5f, 0.5f);
+    primitiveTestPyramid.transform.rotate(0.0f, 0.0f, 0.0f);
+    primitiveTestPyramid.draw(m_shaders["assimp"]);
 
 
-    /*
-    // m_shaders["default"].use();
-    // int x = -4;
-    // float angle = 20;
-    // for (size_t i = 0; i < meshes.size(); ++i)
-    // {
-    //     if (i > 0)
-    //     {
-    //         meshes[i].moveTo(x, 1, -2);
-    //         x += 4;
-    //         meshes[i].rotate(angle, glm::vec3(1.0f, 1.0f, 1.0f));
-    //         angle += 30;
-    //     }
-    //
-    //     glm::mat4 mvp = projection * view * meshes[i].getModelMatrix();
-    //     m_shaders["default"].setUniformMatrix4fv("mvp", mvp);
-    //
-    //
-    //     glBindVertexArray(meshes[i].m_VAO);
-    //     glDrawElements(GL_TRIANGLES, meshes[i].getIndicesSize(), GL_UNSIGNED_INT, 0);
-    //     glBindVertexArray(0);
-    // }
-    */
-    // if (!m_see_grid) return;
-    // glBindVertexArray(m_grid.m_VAO);
-    // m_grid.moveTo(0, 0, 0);
-    // m_grid.rotate(45.0f, glm::vec3(0, 1, 0));
-    // glm::mat4 mvp = projection * view * m_grid.getModelMatrix();
-    // m_shaders["grid"].use();
-    // m_shaders["grid"].setUniformMatrix4fv("mvp", mvp);
-    // glDrawArrays(GL_LINES, 0, m_grid.getVertices().size() / 3);
-    // glBindVertexArray(0);
+
+    if (!m_see_grid) return;
+    glBindVertexArray(m_grid.m_VAO);
+    glm::mat4 mvp = projection * view * m_grid.getModelMatrix();
+    m_shaders["grid"].use();
+    m_shaders["grid"].setUniformMatrix4fv("mvp", mvp);
+    glDrawArrays(GL_LINES, 0, m_grid.getVertices().size() / 3);
+    glBindVertexArray(0);
 }
 
 
