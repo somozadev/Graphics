@@ -3,18 +3,22 @@
 #include <glm/glm/gtc/constants.hpp>
 #include <glm/glm/gtc/matrix_transform.hpp>
 
-SpherePrimitive::SpherePrimitive()
+SpherePrimitive::SpherePrimitive(): m_sectors(20), m_stacks(20)
 {
-    createVertexAndIndices();
-    m_indicesSize = m_indices.size();
-    generateBuffers();
+    initVertexAndIndices();
+    generateMesh();
+
 }
 
 SpherePrimitive::SpherePrimitive(int stacks, int sectors) : m_sectors(sectors), m_stacks(stacks)
 {
-    createVertexAndIndices();
-    m_indicesSize = m_indices.size();
-    generateBuffers();
+    initVertexAndIndices();
+    generateMesh();
+}
+void SpherePrimitive::generateMesh()
+{
+    Mesh sphereMesh(m_vertices, m_indices, std::vector<Texture>());
+    addMesh(sphereMesh);
 }
 
 /*
@@ -22,13 +26,13 @@ SpherePrimitive::SpherePrimitive(int stacks, int sectors) : m_sectors(sectors), 
  * each latitude, basically figuring out the cartesian coordinates of each point in a sphere based on
  * radius r, longitud phi (0 - 2pi) and latitud thetha (0 - pi) angles 
  */
-void SpherePrimitive::createVertexAndIndices()
+void SpherePrimitive::initVertexAndIndices()
 {
     for (int i = 0; i <= m_stacks; ++i)
     {
         float stackAngle = glm::pi<float>() / 2 - i * (glm::pi<float>() / m_stacks); // from pi/2 to -pi/2
-        float xy = m_scale * cos(stackAngle); // r * cos(phi)
-        float z = m_scale * sin(stackAngle); // r * sin(phi)
+        float xy = cos(stackAngle); // r * cos(phi)
+        float z = sin(stackAngle); // r * sin(phi)
 
         // Add (sectors + 1) vertices per stack
         for (int j = 0; j <= m_sectors; ++j)
@@ -37,10 +41,11 @@ void SpherePrimitive::createVertexAndIndices()
 
             float x = xy * cos(sectorAngle); // r * cos(phi) * cos(theta)
             float y = xy * sin(sectorAngle); // r * cos(phi) * sin(theta)
-
-            m_vertices.push_back(x);
-            m_vertices.push_back(y);
-            m_vertices.push_back(z);
+            m_vertices.emplace_back(Vertex{
+                            { x, y, z },  // Position
+                            { 0.0f, 0.0f, 0.0f },  // Normal (empty)
+                            { 0.0f, 0.0f }         // Texture coordinates (empty)
+                        });
         }
     }
     for (int i = 0; i < m_stacks; ++i)

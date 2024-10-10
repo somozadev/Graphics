@@ -19,6 +19,7 @@ private:
     glm::vec3 m_front;
     glm::vec3 m_target;
     glm::vec3 m_rot_direction;
+    float m_aspectRatio;
 
     const float radius = 5.0f;
     Window* ref_window;
@@ -35,17 +36,21 @@ private:
     void translate(float delta_time);
     void rotate();
     void updateCameraVectors();
+    void updateAspectRatio();
 
 public:
     glm::vec3 m_position;
     float m_speed = 1.0f;
     glm::vec3 m_direction;
     glm::mat4 m_view_matrix;
+    glm::mat4 m_projection_matrix;
 
     bool spin{false};
 
     Camera(Window* window);
     glm::mat4 getViewMatrix();
+    glm::mat4 getProjectionMatrix();
+
     ~Camera();
     void update(float delta_time);
 };

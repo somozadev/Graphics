@@ -2,9 +2,9 @@
 #include <vector>
 #include <glad/glad.h>
 
-#include "../../Mesh.h"
+#include "../../OldMesh.h"
 
-class Grid : public Mesh
+class Grid : public OldMesh
 {
 private:
     void init();

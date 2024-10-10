@@ -1,22 +1,22 @@
 ﻿#include "PlanePrimitive.h"
 
-#include <glm/glm/gtc/matrix_transform.hpp>
 
-PlanePrimitive::PlanePrimitive()
+PlanePrimitive::PlanePrimitive() : m_width(1.0f), m_depth(1.0f), m_subdivision(20)
 {
     initVertexAndIndices();
-    m_indicesSize = m_indices.size();
-    generateBuffers();
+    generateMesh();
 }
 
-PlanePrimitive::PlanePrimitive(int scale, int subdivision) : m_subdivision(subdivision)
+PlanePrimitive::PlanePrimitive(int scale, int subdivision) : m_width(scale), m_depth(scale), m_subdivision(subdivision)
 {
-    m_scale = scale;
-    m_width = m_scale;
-    m_depth = m_scale;
     initVertexAndIndices();
-    m_indicesSize = m_indices.size();
-    generateBuffers();
+    generateMesh();
+}
+
+void PlanePrimitive::generateMesh()
+{
+    Mesh planeMesh(m_vertices, m_indices, std::vector<Texture>());
+    addMesh(planeMesh);
 }
 
 void PlanePrimitive::initVertexAndIndices() 
@@ -25,6 +25,8 @@ void PlanePrimitive::initVertexAndIndices()
     float halfDepth = m_depth / 2.0f;
     float deltaX = m_width / m_subdivision;
     float deltaZ = m_depth / m_subdivision;
+
+    // Generate vertices
     for (int z = 0; z <= m_subdivision; ++z)
     {
         for (int x = 0; x <= m_subdivision; ++x)
@@ -32,11 +34,16 @@ void PlanePrimitive::initVertexAndIndices()
             float posX = -halfWidth + x * deltaX;
             float posZ = -halfDepth + z * deltaZ;
 
-            m_vertices.push_back(posX);
-            m_vertices.push_back(0.0f); // plane is Y = 0
-            m_vertices.push_back(posZ);
+            // Create a vertex with position, empty normal, and empty texture coordinates
+            m_vertices.emplace_back(Vertex{
+                { posX, 0.0f, posZ },  // Position
+                { 0.0f, 0.0f, 0.0f },  // Normal (empty)
+                { 0.0f, 0.0f }         // Texture coordinates (empty)
+            });
         }
     }
+
+    // Generate indices
     for (int z = 0; z < m_subdivision; ++z)
     {
         for (int x = 0; x < m_subdivision; ++x)

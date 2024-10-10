@@ -1,6 +1,7 @@
 ﻿#include "Helper.h"
 #include <cstdlib>
 #include <ctime>
+#include <string>
 
 
 float Helper::getRnd(float min, float max)
@@ -16,4 +17,13 @@ float Helper::getRndDegrees()
 void Helper::initRnd()
 {
     srand(static_cast<unsigned int>(time(0)));
+}
+
+std::string Helper::getPath(const std::string& path)
+{
+    return getBasePath() + "/" + path;
+}
+std::string Helper::getBasePath()
+{
+    return "C:/Users/mesom/Documents/GitHub/Graphics/LearnOpenGL/Somine Engine/Somine/models"; 
 }
