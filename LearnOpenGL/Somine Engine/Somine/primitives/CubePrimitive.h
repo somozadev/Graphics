@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "../OldMesh.h"
+#include "../assimpLoader/Model.h"
 
-class CubePrimitive : public OldMesh
+class CubePrimitive : public Model
 {
 public:
     CubePrimitive();

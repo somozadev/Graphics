@@ -2,21 +2,21 @@
 
 #include <glm/glm/gtc/matrix_transform.hpp>
 
-CubePrimitive::CubePrimitive()
+CubePrimitive::CubePrimitive(): Model()
 {
-    m_vertices = {
-        // Front face
-        -0.5f, -0.5f, 0.5f, // Bottom-left
-        0.5f, -0.5f, 0.5f, // Bottom-right
-        0.5f, 0.5f, 0.5f, // Top-right
-        -0.5f, 0.5f, 0.5f, // Top-left
-        // Back face
-        -0.5f, -0.5f, -0.5f, // Bottom-left
-        0.5f, -0.5f, -0.5f, // Bottom-right
-        0.5f, 0.5f, -0.5f, // Top-right
-        -0.5f, 0.5f, -0.5f // Top-left
+     std::vector<Vertex> vertices =  {
+         // Front face
+         {{-0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}},  // Bottom-left
+         {{ 0.5f, -0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}},  // Bottom-right
+         {{ 0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},  // Top-right
+         {{-0.5f,  0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},  // Top-left
+         // Back face
+         {{-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f}}, // Bottom-left
+         {{ 0.5f, -0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f}}, // Bottom-right
+         {{ 0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f}}, // Top-right
+         {{-0.5f,  0.5f, -0.5f}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f}}, // Top-left
     };
-    m_indices = {
+     std::vector<unsigned int> indices = {
         0, 1, 2, 2, 3, 0, // Front face
         6, 5, 4, 4, 7, 6, // Back face
         0, 3, 7, 7, 4, 0, // Left face
@@ -24,6 +24,6 @@ CubePrimitive::CubePrimitive()
         3, 2, 6, 6, 7, 3, // Top face
         5, 1, 0, 0, 4, 5, // Bottom face
     };
-    m_indicesSize = m_indices.size();
-    generateBuffers();
+    Mesh cubeMesh(vertices, indices, std::vector<Texture>());
+    addMesh(cubeMesh);  
 }

@@ -74,3 +74,12 @@ OldMesh::~OldMesh()
     glDeleteBuffers(1, &m_VBO);
     glDeleteBuffers(1, &m_EBO);
 }
+
+
+enum PRIMITIVE_TYPE
+{
+    PRIMITIVE_TYPE_CUBE,
+    PRIMITIVE_TYPE_PYRAMID,
+    PRIMITIVE_TYPE_PLANE,
+    PRIMITIVE_TYPE_SPHERE,
+};

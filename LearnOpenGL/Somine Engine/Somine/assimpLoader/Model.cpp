@@ -6,14 +6,28 @@
 
 Model::Model(std::string const& path)
 {
+    transform = Transform();
     loadModel(path);
 }
 
+Model::Model()
+{
+    transform = Transform();
+}
+
+
 void Model::draw(Shader& shader)
 {
+    shader.setUniformMatrix4fv("model", transform.getModelMatrix());
     for (GLuint i = 0; i < m_meshes.size(); i++)
         m_meshes[i].draw(shader);
 }
+
+void Model::addMesh(const Mesh& mesh)
+{
+    m_meshes.push_back(mesh);
+}
+
 
 void Model::loadModel(std::string const& path)
 {

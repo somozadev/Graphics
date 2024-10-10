@@ -2,15 +2,22 @@
 #include "assimp/Importer.hpp"
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+
+#include "../Transform.h"
 using namespace std;
 #include "Mesh.h"
 #include "../Shader.h"
+
+
 
 class Model
 {
 public:
     Model(std::string const &path);
+    Model();
     void draw(Shader& shader);
+    void addMesh(const Mesh& mesh);
+    Transform transform;
 
 private:
     vector<Mesh> m_meshes;

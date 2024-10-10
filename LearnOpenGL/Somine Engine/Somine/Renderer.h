@@ -9,6 +9,7 @@
 #include "Shader.h"
 #include "Window.h"
 #include "assimpLoader/Model.h"
+#include "primitives/CubePrimitive.h"
 #include "primitives/grid/Grid.h"
 
 class Renderer
@@ -28,6 +29,7 @@ private:
     bool m_see_grid{true};
     Window* ref_window;
     Model cup{"resources/models/cup/coffee_cup_fbx.fbx"};
+    CubePrimitive primitiveTestCube{};
     Model backpack{"resources/models/backpack/backpack.obj"};
     Model cube{"resources/models/cube/cubeTest.fbx"};
 

@@ -146,9 +146,15 @@
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OldMesh.cpp" />
+    <ClCompile Include="primitives\CubePrimitive.cpp" />
+    <ClCompile Include="primitives\grid\Grid.cpp" />
+    <ClCompile Include="primitives\PlanePrimitive.cpp" />
+    <ClCompile Include="primitives\PyramidPrimitive.cpp" />
+    <ClCompile Include="primitives\SpherePrimitive.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -160,14 +166,41 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="OldMesh.h" />
+    <ClInclude Include="primitives\CubePrimitive.h" />
+    <ClInclude Include="primitives\grid\Grid.h" />
+    <ClInclude Include="primitives\PlanePrimitive.h" />
+    <ClInclude Include="primitives\PyramidPrimitive.h" />
+    <ClInclude Include="primitives\SpherePrimitive.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="resources\" />
+    <Content Include="resources\models\backpack\ao.jpg" />
+    <Content Include="resources\models\backpack\backpack.mtl" />
+    <Content Include="resources\models\backpack\backpack.obj" />
+    <Content Include="resources\models\backpack\diffuse.jpg" />
+    <Content Include="resources\models\backpack\normal.png" />
+    <Content Include="resources\models\backpack\roughness.jpg" />
+    <Content Include="resources\models\backpack\source_attribution.txt" />
+    <Content Include="resources\models\backpack\specular.jpg" />
+    <Content Include="resources\models\cube\cubeTest.fbx" />
+    <Content Include="resources\models\cup\coffee_cup_fbx.fbx" />
+    <Content Include="resources\models\cup\textures\Base_color.png" />
+    <Content Include="resources\models\cup\textures\metallic.png" />
+    <Content Include="resources\models\cup\textures\normal.png" />
+    <Content Include="resources\models\cup\textures\roughness.png" />
+    <Content Include="resources\shaders\assimp\fragment_shader.glsl" />
+    <Content Include="resources\shaders\assimp\vertex_shader.glsl" />
+    <Content Include="resources\shaders\fragment_shader.glsl" />
+    <Content Include="resources\shaders\grid\fragment_shader.glsl" />
+    <Content Include="resources\shaders\grid\vertex_shader.glsl" />
+    <Content Include="resources\shaders\vertex_shader.glsl" />
+    <Content Include="resources\textures\container.jpg" />
+    <Content Include="resources\textures\happy.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

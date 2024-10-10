@@ -7,6 +7,7 @@
 #include "Helper.h"
 #include "stb_image.h"
 #include "assimpLoader/Model.h"
+#include "Transform.h"
 #include "primitives/CubePrimitive.h"
 #include "primitives/PlanePrimitive.h"
 #include "primitives/PyramidPrimitive.h"
@@ -23,9 +24,15 @@ Renderer::Renderer(Window* window) : m_camera(window)
 
 void Renderer::initShadersMap()
 {
-    m_shaders.insert({"default", Shader("resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl")});
-    m_shaders.insert({"grid", Shader("resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")});
-    m_shaders.insert({"assimp", Shader("resources/shaders/assimp/vertex_shader.glsl", "resources/shaders/assimp/fragment_shader.glsl")});
+    m_shaders.insert({
+        "default", Shader("resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl")
+    });
+    m_shaders.insert({
+        "grid", Shader("resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")
+    });
+    m_shaders.insert({
+        "assimp", Shader("resources/shaders/assimp/vertex_shader.glsl", "resources/shaders/assimp/fragment_shader.glsl")
+    });
 }
 
 
@@ -61,22 +68,30 @@ void Renderer::update()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_shaders["assimp"].use();
-    glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = m_camera.getViewMatrix();
     glm::mat4 projection = m_camera.getProjectionMatrix();
-
     m_shaders["assimp"].setUniformMatrix4fv("view", view);
     m_shaders["assimp"].setUniformMatrix4fv("projection", projection);
 
-    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-    model = glm::rotate(model, glm::radians(270.0f), glm::vec3(1, 0, 0));
-    m_shaders["assimp"].setUniformMatrix4fv("model", model);
 
-
-    // cup.draw(m_shaders["assimp"]);
+    backpack.transform.move(0.0f, 0.0f, 0.0f);
+    backpack.transform.scale(1.0f, 1.0f, 1.0f);
+    backpack.transform.rotate(0.0f, 0.0f, 0.0f);
     backpack.draw(m_shaders["assimp"]);
-    // cube.draw(m_shaders["assimp"]);
+
+    cup.transform.move(2.0f, 0.0f, 0.0f);
+    cup.transform.scale(1.5f, 1.5f, 1.5f);
+    cup.transform.rotate(270.0f, 0.0f, 0.0f);
+    cup.draw(m_shaders["assimp"]);
+    
+    // m_shaders["default"].use();
+    // m_shaders["default"].setUniformMatrix4fv("view", view);
+    // m_shaders["default"].setUniformMatrix4fv("projection", projection);
+    primitiveTestCube.transform.move(-2.0f, 0.0f, 0.0f);
+    primitiveTestCube.transform.scale(1.5f, 1.5f, 1.5f);
+    primitiveTestCube.transform.rotate(0.0f, 0.0f, 0.0f);
+    primitiveTestCube.draw(m_shaders["assimp"]);
+
 
     /*
     // m_shaders["default"].use();
