@@ -78,7 +78,7 @@ void Renderer::update()
     backpack.transform.scale(1.0f, 1.0f, 1.0f);
     backpack.transform.rotate(0.0f, 0.0f, 0.0f);
     backpack.draw(m_shaders["assimp"]);
-
+    
     cup.transform.move(2.0f, 0.0f, 0.0f);
     cup.transform.scale(1.5f, 1.5f, 1.5f);
     cup.transform.rotate(270.0f, 0.0f, 0.0f);
@@ -87,10 +87,20 @@ void Renderer::update()
     // m_shaders["default"].use();
     // m_shaders["default"].setUniformMatrix4fv("view", view);
     // m_shaders["default"].setUniformMatrix4fv("projection", projection);
-    primitiveTestCube.transform.move(-2.0f, 0.0f, 0.0f);
-    primitiveTestCube.transform.scale(1.5f, 1.5f, 1.5f);
+    primitiveTestCube.transform.move(-5.0f, 0.0f, 0.0f);
+    primitiveTestCube.transform.scale(0.5f, 0.5f, 0.5f);
     primitiveTestCube.transform.rotate(0.0f, 0.0f, 0.0f);
     primitiveTestCube.draw(m_shaders["assimp"]);
+    
+    primitiveTestPlane.transform.move(15.0f, 0.0f, 0.0f);
+    primitiveTestPlane.transform.scale(0.5f, 0.5f, 0.5f);
+    primitiveTestPlane.transform.rotate(0.0f, 0.0f, 0.0f);
+    primitiveTestPlane.draw(m_shaders["assimp"]);
+
+    ar47.transform.move(-8.0f, 0.0f, 0.0f);
+    ar47.transform.scale(1.0f, 1.0f, 1.0f);
+    ar47.transform.rotate(-90.0f, 0.0f, 0.0f);
+    ar47.draw(m_shaders["assimp"]);
 
 
     /*

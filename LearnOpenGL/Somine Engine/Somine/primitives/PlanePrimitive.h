@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "../OldMesh.h"
+#include "../assimpLoader/Model.h"
 
-class PlanePrimitive : public OldMesh
+class PlanePrimitive : public Model
 {
 public:
     PlanePrimitive();
@@ -10,6 +10,11 @@ public:
     float m_depth;
 
 private:
+    
+    std::vector<Vertex> m_vertices; 
+    std::vector<GLuint> m_indices;
+
+    void generateMesh();
     void initVertexAndIndices();
     const float m_subdivision = 20.0f;
 };

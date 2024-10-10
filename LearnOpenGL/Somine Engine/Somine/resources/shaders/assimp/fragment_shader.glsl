@@ -18,6 +18,13 @@ void main()
     vec3 diffuse_texture = texture(texture_diffuse1, tex_coords).rgb;
       float specular_texture = texture(texture_specular1, tex_coords).r;
       
-    fragment_color = vec4(texture(texture_diffuse1, tex_coords)); 
+    if (diffuse_texture == vec3(0.0, 0.0, 0.0)) 
+    {
+        fragment_color = vec4(1.0, 1.0, 1.0, 1.0); 
+    } 
+    else 
+    {
+        fragment_color = vec4(texture(texture_diffuse1, tex_coords)); 
+    }
 
 }
