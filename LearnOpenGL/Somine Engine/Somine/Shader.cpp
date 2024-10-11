@@ -95,6 +95,7 @@ void Shader::use() const
 {
     glUseProgram(id);
 }
+//here instead of this i can create a UBO to store all this uniform into 4bytes chunks. 
 void Shader::setBool(const std::string &name, bool value) const
 {         
     glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value); 

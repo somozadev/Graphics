@@ -62,6 +62,12 @@ void Mesh::setupMesh()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * m_indices.size(), &m_indices[0], GL_STATIC_DRAW);
 
+
+    //right now i have 1 VAO and 1 VBO per mesh, we can change it to be
+    // 1 VAO and / or 1 VBO per model, having inside them multiple meshes
+    //it might be a hardware limitation decission, pretty much based on which platform you are targetting 
+    
+    
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(1);

@@ -151,6 +151,7 @@
     <ClCompile Include="primitives\PlanePrimitive.cpp" />
     <ClCompile Include="primitives\PyramidPrimitive.cpp" />
     <ClCompile Include="primitives\SpherePrimitive.cpp" />
+    <ClCompile Include="primitives\Terrain.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="TextureManager.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="primitives\PlanePrimitive.h" />
     <ClInclude Include="primitives\PyramidPrimitive.h" />
     <ClInclude Include="primitives\SpherePrimitive.h" />
+    <ClInclude Include="primitives\Terrain.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stb_image.h" />
