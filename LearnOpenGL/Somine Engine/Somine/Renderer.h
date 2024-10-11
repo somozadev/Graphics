@@ -38,6 +38,7 @@ private:
     CubePrimitive primitiveTestCube{};
     PlanePrimitive primitiveTestPlane{};
     SpherePrimitive primitiveTestSphere{};
+    SpherePrimitive light{};
     PyramidPrimitive primitiveTestPyramid{};
     Model backpack{"resources/models/backpack/backpack.obj"};
 

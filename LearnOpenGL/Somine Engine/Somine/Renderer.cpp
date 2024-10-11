@@ -28,6 +28,9 @@ void Renderer::initShadersMap()
         "default", Shader("resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl")
     });
     m_shaders.insert({
+    "light", Shader("resources/shaders/lightSource/vertex_shader.glsl", "resources/shaders/lightSource/fragment_shader.glsl")
+});
+    m_shaders.insert({
         "grid", Shader("resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")
     });
     m_shaders.insert({
@@ -66,6 +69,16 @@ void Renderer::update()
     glm::mat4 projection = m_camera.getProjectionMatrix();
     m_shaders["assimp"].setUniformMatrix4fv("view", view);
     m_shaders["assimp"].setUniformMatrix4fv("projection", projection);
+
+    m_shaders["light"].use();
+    m_shaders["light"].setUniformMatrix4fv("view", view);
+    m_shaders["light"].setUniformMatrix4fv("projection", projection);
+    light.transform.move(0.0, 20.0, 15.0);
+    light.transform.scale(0.2, 0.2, 0.2);
+    light.draw(m_shaders["light"]);
+
+    m_shaders["assimp"].use();
+    m_shaders["assimp"].setVec3("light_position", light.transform.position);
 
 
     ar47.transform.move(-8.0f, 0.0f, 0.0f);
