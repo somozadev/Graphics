@@ -144,6 +144,14 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="ImguiHandler.cpp" />
+    <ClCompile Include="Libraries\include\IMGUI\imgui.cpp" />
+    <ClCompile Include="Libraries\include\IMGUI\imgui_demo.cpp" />
+    <ClCompile Include="Libraries\include\IMGUI\imgui_draw.cpp" />
+    <ClCompile Include="Libraries\include\IMGUI\imgui_impl_glfw.cpp" />
+    <ClCompile Include="Libraries\include\IMGUI\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="Libraries\include\IMGUI\imgui_tables.cpp" />
+    <ClCompile Include="Libraries\include\IMGUI\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OldMesh.cpp" />
     <ClCompile Include="primitives\CubePrimitive.cpp" />
@@ -166,6 +174,16 @@
     <ClInclude Include="assimpLoader\Vertex.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="ImguiHandler.h" />
+    <ClInclude Include="Libraries\include\IMGUI\imconfig.h" />
+    <ClInclude Include="Libraries\include\IMGUI\imgui.h" />
+    <ClInclude Include="Libraries\include\IMGUI\imgui_impl_glfw.h" />
+    <ClInclude Include="Libraries\include\IMGUI\imgui_impl_opengl3.h" />
+    <ClInclude Include="Libraries\include\IMGUI\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="Libraries\include\IMGUI\imgui_internal.h" />
+    <ClInclude Include="Libraries\include\IMGUI\imstb_rectpack.h" />
+    <ClInclude Include="Libraries\include\IMGUI\imstb_textedit.h" />
+    <ClInclude Include="Libraries\include\IMGUI\imstb_truetype.h" />
     <ClInclude Include="OldMesh.h" />
     <ClInclude Include="primitives\CubePrimitive.h" />
     <ClInclude Include="primitives\grid\Grid.h" />
@@ -181,6 +199,7 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Libraries\include\IMGUI\imgui.natstepfilter" />
     <Content Include="resources\models\ar\Ar-47.fbx" />
     <Content Include="resources\models\ar\Ar_47_AR-47_BaseColor.1001.png" />
     <Content Include="resources\models\ar\Ar_47_AR-47_Metallic.1001.png" />
@@ -213,6 +232,16 @@
     <Content Include="resources\textures\container.jpg" />
     <Content Include="resources\textures\happy.png" />
     <Content Include="resources\textures\terrain_heightmap.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="resources\shaders\multipass\diferred\" />
+    <Folder Include="resources\shaders\multipass\forward\ambient_pass\" />
+    <Folder Include="resources\shaders\multipass\forward\depth_pass\" />
+    <Folder Include="resources\shaders\multipass\forward\light_pass\" />
+    <Folder Include="resources\shaders\multipass\forward\shadow_pass\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Libraries\include\IMGUI\imgui.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

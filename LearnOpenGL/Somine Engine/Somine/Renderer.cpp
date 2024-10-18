@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include "Helper.h"
+#include "ImguiHandler.h"
 #include "stb_image.h"
 #include "assimpLoader/Model.h"
 #include "Transform.h"
@@ -59,6 +60,8 @@ void Renderer::init()
 
 void Renderer::update()
 {
+    ImguiHandler::startWindow("settings");
+    
     current_frame = static_cast<float>(glfwGetTime());
     delta_time = current_frame - last_frame;
     last_frame = current_frame;
@@ -121,6 +124,9 @@ void Renderer::update()
      primitiveTestPyramid.transform.rotate(0.0f, 0.0f, 0.0f);
      primitiveTestPyramid.draw(m_shaders["assimp"]);
 
+    ImguiHandler::addCheckBox("wireframe", &m_wireframe);
+    ImguiHandler::addCheckBox("grid", &m_see_grid);
+    ImguiHandler::draw();
 
     if (!m_see_grid) return;
     glBindVertexArray(m_grid.m_VAO);
@@ -129,6 +135,8 @@ void Renderer::update()
     m_shaders["grid"].setUniformMatrix4fv("mvp", mvp);
     glDrawArrays(GL_LINES, 0, m_grid.getVertices().size() / 3);
     glBindVertexArray(0);
+    
+
 }
 
 
