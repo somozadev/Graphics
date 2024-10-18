@@ -34,7 +34,7 @@ private:
     bool m_wireframe{false};
     bool m_see_grid{true};
     Window* ref_window;
-    Terrain terrain{"resources/textures/happy.png", 1.0f, 100, 10.0f};
+    Terrain terrain{"resources/textures/happy.png", 1.0f, 20, 1.0f};
     Model ar47{"resources/models/ar/Ar-47.fbx"};
     Model cup{"resources/models/cup/coffee_cup_fbx.fbx"};
     CubePrimitive primitiveTestCube{};
@@ -43,11 +43,13 @@ private:
     SpherePrimitive light{};
     PyramidPrimitive primitiveTestPyramid{};
     Model backpack{"resources/models/backpack/backpack.obj"};
-
+    void drawGrid(glm::mat4 projection,glm::mat4 view);
+    void setupMatrices(glm::mat4 projection,glm::mat4 view);
 public:
     float delta_time;
     Renderer(Window* window = nullptr);
     void init();
+    void initModels();
     void initShadersMap();
     void update();
     ~Renderer();

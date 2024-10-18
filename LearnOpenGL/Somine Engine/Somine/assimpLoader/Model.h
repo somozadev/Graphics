@@ -16,11 +16,15 @@ public:
     Model(std::string const &path);
     Model();
     void draw(Shader& shader);
+    void draw();
     void addMesh(const Mesh& mesh);
     Transform transform;
+    void setShaderRef(Shader* shader);
+    Shader* ref_shader;
+protected:
+    vector<Mesh> m_meshes;
 
 private:
-    vector<Mesh> m_meshes;
     vector<Texture> m_textures_loaded;
     string m_directory;
 

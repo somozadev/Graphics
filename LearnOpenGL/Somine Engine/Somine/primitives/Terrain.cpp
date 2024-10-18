@@ -7,7 +7,7 @@
 Terrain::Terrain( const std::string& heightmapPath, float scale, int subdivisions, float heightMultiplier) :  PlanePrimitive(scale, subdivisions),  m_heightMultiplier(heightMultiplier)
 {
     loadHeightmap(heightmapPath);
-    generateTerrainMesh();
+    //generateTerrainMesh();
 }
 void Terrain::generateTerrainMesh()
 {
@@ -27,11 +27,12 @@ void Terrain::generateTerrainMesh()
             int mapZ = static_cast<int>((z / static_cast<float>(m_subdivision)) * (m_heightmapHeight - 1));
 
             // Get the height value from the heightmap and scale it
-            float heightValue = m_heightmapData[mapZ * m_heightmapWidth + mapX];
+            // float heightValue = m_heightmapData[mapZ * m_heightmapWidth + mapX];
 
+            float heightValue = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
             // Modify the Y position of the vertex
-            m_vertices[vertexCount].position.y = heightValue * m_heightMultiplier;
-
+            m_meshes[0].m_vertices[vertexCount].position.y = heightValue * m_heightMultiplier;
+        
             ++vertexCount;
         }
     }

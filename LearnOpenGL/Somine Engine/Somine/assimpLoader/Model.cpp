@@ -24,12 +24,21 @@ void Model::draw(Shader& shader)
     for (GLuint i = 0; i < m_meshes.size(); i++)
         m_meshes[i].draw(shader);
 }
+void Model::draw()
+{
+    ref_shader->setUniformMatrix4fv("model", transform.getModelMatrix());
+    for (GLuint i = 0; i < m_meshes.size(); i++)
+        m_meshes[i].draw(*ref_shader);
+}
 
 void Model::addMesh(const Mesh& mesh)
 {
     m_meshes.push_back(mesh);
 }
-
+void Model::setShaderRef(Shader* shader)
+{
+    ref_shader = shader;
+}
 
 void Model::loadModel(std::string const& path)
 {
