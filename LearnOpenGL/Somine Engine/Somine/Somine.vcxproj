@@ -207,9 +207,12 @@
     <Content Include="resources\shaders\grid\vertex_shader.glsl" />
     <Content Include="resources\shaders\lightSource\fragment_shader.glsl" />
     <Content Include="resources\shaders\lightSource\vertex_shader.glsl" />
+    <Content Include="resources\shaders\terrain\fragment_shader.glsl" />
+    <Content Include="resources\shaders\terrain\vertex_shader.glsl" />
     <Content Include="resources\shaders\vertex_shader.glsl" />
     <Content Include="resources\textures\container.jpg" />
     <Content Include="resources\textures\happy.png" />
+    <Content Include="resources\textures\terrain_heightmap.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

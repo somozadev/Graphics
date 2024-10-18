@@ -23,7 +23,26 @@ unsigned int TextureManager::loadTexture(const char* path, GLenum format)
     unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0);
     if (data)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        GLenum internalFormat;
+        GLenum imageFormat;
+    
+        if (nrChannels == 1)
+        {
+            internalFormat = GL_RED;
+            imageFormat = GL_RED;
+        }
+        else if (nrChannels == 3)
+        {
+            internalFormat = GL_RGB;
+            imageFormat = GL_RGB;
+        }
+        else if (nrChannels == 4)
+        {
+            internalFormat = GL_RGBA;
+            imageFormat = GL_RGBA;
+        }
+        
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, imageFormat, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else

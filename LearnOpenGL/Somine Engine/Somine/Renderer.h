@@ -13,6 +13,7 @@
 #include "primitives/PlanePrimitive.h"
 #include "primitives/PyramidPrimitive.h"
 #include "primitives/SpherePrimitive.h"
+#include "primitives/Terrain.h"
 #include "primitives/grid/Grid.h"
 
 class Renderer
@@ -33,14 +34,14 @@ private:
     bool m_wireframe{false};
     bool m_see_grid{true};
     Window* ref_window;
-    Model ar47{"resources/models/ar/Ar-47.fbx"};
-    Model cup{"resources/models/cup/coffee_cup_fbx.fbx"};
-    CubePrimitive primitiveTestCube{};
-    PlanePrimitive primitiveTestPlane{};
-    SpherePrimitive primitiveTestSphere{};
-    SpherePrimitive light{};
-    PyramidPrimitive primitiveTestPyramid{};
-    Model backpack{"resources/models/backpack/backpack.obj"};
+     Model ar47{"resources/models/ar/Ar-47.fbx"};
+     Model cup{"resources/models/cup/coffee_cup_fbx.fbx"};
+     CubePrimitive primitiveTestCube{};
+     PlanePrimitive primitiveTestPlane{};
+     SpherePrimitive primitiveTestSphere{};
+     SpherePrimitive light{};
+     PyramidPrimitive primitiveTestPyramid{};
+     Model backpack{"resources/models/backpack/backpack.obj"};
 
 public:
     float delta_time;

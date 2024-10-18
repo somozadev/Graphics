@@ -36,6 +36,10 @@ void Renderer::initShadersMap()
     m_shaders.insert({
         "assimp", Shader("resources/shaders/assimp/vertex_shader.glsl", "resources/shaders/assimp/fragment_shader.glsl")
     });
+    
+    m_shaders.insert({
+        "terrain", Shader("resources/shaders/terrain/vertex_shader.glsl", "resources/shaders/terrain/fragment_shader.glsl")
+    });
 }
 
 void Renderer::init()
@@ -73,48 +77,49 @@ void Renderer::update()
     m_shaders["light"].use();
     m_shaders["light"].setUniformMatrix4fv("view", view);
     m_shaders["light"].setUniformMatrix4fv("projection", projection);
-    light.transform.move(0.0, 20.0, 15.0);
-    light.transform.scale(0.2, 0.2, 0.2);
-    light.draw(m_shaders["light"]);
-
-    m_shaders["assimp"].use();
-    m_shaders["assimp"].setVec3("light_position", light.transform.position);
-
-
-    ar47.transform.move(-8.0f, 0.0f, 0.0f);
-    ar47.transform.scale(1.0f, 1.0f, 1.0f);
-    ar47.transform.rotate(-90.0f, 0.0f, 0.0f);
-    ar47.draw(m_shaders["assimp"]);
-
-    backpack.transform.move(0.0f, 0.0f, 0.0f);
-    backpack.transform.scale(1.0f, 1.0f, 1.0f);
-    backpack.transform.rotate(0.0f, 0.0f, 0.0f);
-    backpack.draw(m_shaders["assimp"]);
-
-    cup.transform.move(2.0f, 0.0f, 0.0f);
-    cup.transform.scale(1.5f, 1.5f, 1.5f);
-    cup.transform.rotate(270.0f, 0.0f, 0.0f);
-    cup.draw(m_shaders["assimp"]);
-
-    primitiveTestCube.transform.move(-5.0f, 0.0f, 0.0f);
-    primitiveTestCube.transform.scale(0.5f, 0.5f, 0.5f);
-    primitiveTestCube.transform.rotate(0.0f, 0.0f, 0.0f);
-    primitiveTestCube.draw(m_shaders["assimp"]);
-
-    primitiveTestSphere.transform.move(-10.0f, 0.0f, 0.0f);
-    primitiveTestSphere.transform.scale(0.5f, 0.5f, 0.5f);
-    primitiveTestSphere.transform.rotate(0.0f, 0.0f, 0.0f);
-    primitiveTestSphere.draw(m_shaders["assimp"]);
-
-    primitiveTestPlane.transform.move(10.0f, 0.0f, 0.0f);
-    primitiveTestPlane.transform.scale(0.5f, 0.5f, 0.5f);
-    primitiveTestPlane.transform.rotate(0.0f, 0.0f, 0.0f);
-    primitiveTestPlane.draw(m_shaders["assimp"]);
-
-    primitiveTestPyramid.transform.move(15.0f, 0.0f, 0.0f);
-    primitiveTestPyramid.transform.scale(0.5f, 0.5f, 0.5f);
-    primitiveTestPyramid.transform.rotate(0.0f, 0.0f, 0.0f);
-    primitiveTestPyramid.draw(m_shaders["assimp"]);
+    
+     light.transform.move(22.0, 20.0, 15.0);
+     light.transform.scale(0.2, 0.2, 0.2);
+     light.draw(m_shaders["light"]);
+    
+     m_shaders["assimp"].use();
+     m_shaders["assimp"].setVec3("light_position", light.transform.position);
+    
+    
+     ar47.transform.move(-8.0f, 0.0f, 0.0f);
+     ar47.transform.scale(1.0f, 1.0f, 1.0f);
+     ar47.transform.rotate(-90.0f, 0.0f, 0.0f);
+     ar47.draw(m_shaders["assimp"]);
+    
+     backpack.transform.move(0.0f, 0.0f, 0.0f);
+     backpack.transform.scale(1.0f, 1.0f, 1.0f);
+     backpack.transform.rotate(0.0f, 0.0f, 0.0f);
+     backpack.draw(m_shaders["assimp"]);
+    
+     cup.transform.move(2.0f, 0.0f, 0.0f);
+     cup.transform.scale(1.5f, 1.5f, 1.5f);
+     cup.transform.rotate(270.0f, 0.0f, 0.0f);
+     cup.draw(m_shaders["assimp"]);
+    
+     primitiveTestCube.transform.move(-5.0f, 0.0f, 0.0f);
+     primitiveTestCube.transform.scale(0.5f, 0.5f, 0.5f);
+     primitiveTestCube.transform.rotate(0.0f, 0.0f, 0.0f);
+     primitiveTestCube.draw(m_shaders["assimp"]);
+    
+     primitiveTestSphere.transform.move(-10.0f, 0.0f, 0.0f);
+     primitiveTestSphere.transform.scale(0.5f, 0.5f, 0.5f);
+     primitiveTestSphere.transform.rotate(0.0f, 0.0f, 0.0f);
+     primitiveTestSphere.draw(m_shaders["assimp"]);
+    
+     primitiveTestPlane.transform.move(10.0f, 0.0f, 0.0f);
+     primitiveTestPlane.transform.scale(0.5f, 0.5f, 0.5f);
+     primitiveTestPlane.transform.rotate(0.0f, 0.0f, 0.0f);
+     primitiveTestPlane.draw(m_shaders["assimp"]);
+    
+     primitiveTestPyramid.transform.move(15.0f, 0.0f, 0.0f);
+     primitiveTestPyramid.transform.scale(0.5f, 0.5f, 0.5f);
+     primitiveTestPyramid.transform.rotate(0.0f, 0.0f, 0.0f);
+     primitiveTestPyramid.draw(m_shaders["assimp"]);
 
 
     if (!m_see_grid) return;

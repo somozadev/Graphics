@@ -8,13 +8,13 @@ public:
     PlanePrimitive(int scale, int subdivision);
 
 private:
-    
-    std::vector<Vertex> m_vertices; 
-    std::vector<GLuint> m_indices;
-
-    float m_width;
-    float m_depth;
     void generateMesh();
     void initVertexAndIndices();
-    const float m_subdivision = 20.0f;
+
+protected:
+    float m_width;
+    float m_depth;
+    std::vector<Vertex> m_vertices;
+    std::vector<GLuint> m_indices;
+    float m_subdivision = 20.0f;
 };
