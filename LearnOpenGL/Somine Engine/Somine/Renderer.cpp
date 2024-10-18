@@ -37,10 +37,10 @@ void Renderer::initShadersMap()
     m_shaders.insert({
         "assimp", Shader("resources/shaders/assimp/vertex_shader.glsl", "resources/shaders/assimp/fragment_shader.glsl")
     });
-    
-    m_shaders.insert({
-        "terrain", Shader("resources/shaders/terrain/vertex_shader.glsl", "resources/shaders/terrain/fragment_shader.glsl")
-    });
+    //
+    // m_shaders.insert({
+    //     "terrain", Shader("resources/shaders/terrain/vertex_shader.glsl", "resources/shaders/terrain/fragment_shader.glsl")
+    // });
 }
 
 void Renderer::init()
@@ -124,6 +124,13 @@ void Renderer::update()
      primitiveTestPyramid.transform.rotate(0.0f, 0.0f, 0.0f);
      primitiveTestPyramid.draw(m_shaders["assimp"]);
 
+    m_shaders["default"].use();
+    m_shaders["default"].setUniformMatrix4fv("view", view);
+    m_shaders["default"].setUniformMatrix4fv("projection", projection);
+    terrain.transform.move(25.0f, 0.0f, 25.0f);
+    terrain.transform.scale(10.0f, 10.0f, 10.0f);
+    terrain.transform.rotate(0.0f, 0.0f, 0.0f);
+    terrain.draw(m_shaders["default"]);
     ImguiHandler::addCheckBox("wireframe", &m_wireframe);
     ImguiHandler::addCheckBox("grid", &m_see_grid);
     ImguiHandler::draw();
