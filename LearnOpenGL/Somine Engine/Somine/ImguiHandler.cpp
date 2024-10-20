@@ -16,6 +16,11 @@ void ImguiHandler::startWindow(const char* name)
     ImGui::Begin(name);
 }
 
+void ImguiHandler::addColorModifier(const char* text,vector<GLfloat>& colorReference)
+{
+    ImGui::ColorEdit3(text, colorReference.data());
+}
+
 
 void ImguiHandler::addCheckBox(const char* text, bool* reference)
 {

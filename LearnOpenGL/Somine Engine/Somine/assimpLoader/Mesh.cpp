@@ -10,7 +10,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned> indices, std::vec
     setupMesh();
 }
 
-void Mesh::draw(Shader& shader)
+void Mesh::draw(const Shader* shader)
 {
     glBindVertexArray(0);
 
@@ -33,7 +33,7 @@ void Mesh::draw(Shader& shader)
         else if (name == "texture_height")
             number = std::to_string(heightN++);
 
-        shader.setInt(name + number, i);
+        shader->setInt(name + number, i);
         glBindTexture(GL_TEXTURE_2D, m_textures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);

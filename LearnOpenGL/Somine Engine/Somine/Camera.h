@@ -21,18 +21,20 @@ private:
     glm::vec3 m_rot_direction;
     float m_aspectRatio;
 
-    const float radius = 5.0f;
-    Window* ref_window;
+    const float m_radius = 5.0f;
+    Window* m_window;
 
-    float camX;
-    float camY;
+    float m_camX;
+    float m_camY;
 
     const float m_sensitivity = 0.1f;
-    float yaw = -90.0f;
-    float pitch;
-    float last_x_mouse_pos;
-    float last_y_mouse_pos;
-
+    float m_yaw = -90.0f;
+    float m_pitch;
+    float m_last_x_mouse_pos;
+    float m_last_y_mouse_pos;
+    glm::mat4 m_view_matrix;
+    glm::mat4 m_projection_matrix;
+    
     void translate(float delta_time);
     void rotate();
     void updateCameraVectors();
@@ -42,8 +44,7 @@ public:
     glm::vec3 m_position;
     float m_speed = 1.0f;
     glm::vec3 m_direction;
-    glm::mat4 m_view_matrix;
-    glm::mat4 m_projection_matrix;
+
 
     bool spin{false};
 

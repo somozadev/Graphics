@@ -19,34 +19,32 @@
 class Renderer
 {
 private:
-    // GLuint m_program{0};
-    // Grid m_grid{20000, 1.0f};
 
     OldMesh m_grid;
-    std::unordered_map<std::string, Shader> m_shaders;
+    std::unordered_map<std::string,const Shader*> m_shaders;
     Camera m_camera;
-    std::vector<GLfloat> bg_color;
+    std::vector<GLfloat> m_bg_color;
     std::vector<Model> m_models;
 
-    float current_frame;
-    float last_frame;
+    float m_current_frame;
+    float m_last_frame;
 
     bool m_wireframe{false};
     bool m_see_grid{true};
-    Window* ref_window;
-    Terrain terrain{"resources/textures/happy.png", 1.0f, 20, 1.0f};
-    Model ar47{"resources/models/ar/Ar-47.fbx"};
-    Model cup{"resources/models/cup/coffee_cup_fbx.fbx"};
-    CubePrimitive primitiveTestCube{};
-    PlanePrimitive primitiveTestPlane{};
-    SpherePrimitive primitiveTestSphere{};
-    SpherePrimitive light{};
-    PyramidPrimitive primitiveTestPyramid{};
-    Model backpack{"resources/models/backpack/backpack.obj"};
+    Window* m_window;
+    Terrain m_terrain{"resources/textures/happy.png", 1.0f, 20, 1.0f};
+    Model m_ar47{"resources/models/ar/Ar-47.fbx"};
+    Model m_cup{"resources/models/cup/coffee_cup_fbx.fbx"};
+    CubePrimitive m_primitiveTestCube{};
+    PlanePrimitive m_primitiveTestPlane{};
+    SpherePrimitive m_primitiveTestSphere{};
+    SpherePrimitive m_light{};
+    PyramidPrimitive m_primitiveTestPyramid{};
+    Model m_backpack{"resources/models/backpack/backpack.obj"};
     void drawGrid(glm::mat4 projection,glm::mat4 view);
     void setupMatrices(glm::mat4 projection,glm::mat4 view);
 public:
-    float delta_time;
+    float m_delta_time;
     Renderer(Window* window = nullptr);
     void init();
     void initModels();

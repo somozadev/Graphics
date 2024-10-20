@@ -15,13 +15,13 @@ class Model
 public:
     Model(std::string const &path);
     Model();
-    void draw(Shader& shader);
+    void draw(const Shader* shader);
     void draw();
     void addMesh(const Mesh& mesh);
     Transform transform;
-    void setShaderRef(Shader* shader);
-    Shader* ref_shader;
+    void setShaderRef(const Shader* shader);
 protected:
+    const Shader* m_shader; 
     vector<Mesh> m_meshes;
 
 private:

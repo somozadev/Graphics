@@ -18,32 +18,35 @@ Model::Model()
 }
 
 
-void Model::draw(Shader& shader)
+void Model::draw(const Shader* shader)
 {
-    shader.setUniformMatrix4fv("model", transform.getModelMatrix());
+    shader->setUniformMatrix4fv("model", transform.getModelMatrix());
     for (GLuint i = 0; i < m_meshes.size(); i++)
         m_meshes[i].draw(shader);
 }
+
 void Model::draw()
 {
-    ref_shader->setUniformMatrix4fv("model", transform.getModelMatrix());
+    m_shader->use();
+    m_shader->setUniformMatrix4fv("model", transform.getModelMatrix());
     for (GLuint i = 0; i < m_meshes.size(); i++)
-        m_meshes[i].draw(*ref_shader);
+        m_meshes[i].draw(m_shader);
 }
 
 void Model::addMesh(const Mesh& mesh)
 {
     m_meshes.push_back(mesh);
 }
-void Model::setShaderRef(Shader* shader)
+
+void Model::setShaderRef(const Shader* shader)
 {
-    ref_shader = shader;
+    m_shader = shader;
 }
 
 void Model::loadModel(std::string const& path)
 {
     Assimp::Importer importer;
-
+    stbi_set_flip_vertically_on_load(false);
     const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -132,7 +135,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
 std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
 {
     std::vector<Texture> textures;
-    std::cout <<  mat->GetTextureCount(type) << typeName << endl;
+    // std::cout << mat->GetTextureCount(type) << typeName << endl;
 
     for (GLuint i = 0; i < mat->GetTextureCount(type); i++)
     {

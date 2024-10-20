@@ -3,13 +3,13 @@
 #include "Window.h"
 
 
-Camera::Camera(Window* window): ref_window(window)
+Camera::Camera(Window* window): m_window(window)
 {
     double xpos, ypos;
-    glfwGetCursorPos(ref_window->getGLFWWindow(), &xpos, &ypos);
+    glfwGetCursorPos(m_window->getGLFWWindow(), &xpos, &ypos);
 
-    last_x_mouse_pos = xpos;
-    last_y_mouse_pos = ypos;
+    m_last_x_mouse_pos = xpos;
+    m_last_y_mouse_pos = ypos;
 
     m_position = glm::vec3(0.0f, 2.0f, 3.0f);
     m_target = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -37,16 +37,16 @@ glm::mat4 Camera::getProjectionMatrix()
 
 void Camera::translate(float delta_time)
 {
-    if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+    if (glfwGetKey(m_window->getGLFWWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         m_speed = 5.0f * delta_time;
     else m_speed = 1.0f * delta_time;
-    if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_W) == GLFW_PRESS)
+    if (glfwGetKey(m_window->getGLFWWindow(), GLFW_KEY_W) == GLFW_PRESS)
         m_position += m_speed * m_front;
-    if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_S) == GLFW_PRESS)
+    if (glfwGetKey(m_window->getGLFWWindow(), GLFW_KEY_S) == GLFW_PRESS)
         m_position -= m_speed * m_front;
-    if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_A) == GLFW_PRESS)
+    if (glfwGetKey(m_window->getGLFWWindow(), GLFW_KEY_A) == GLFW_PRESS)
         m_position -= glm::normalize(glm::cross(m_front, m_up)) * m_speed;
-    if (glfwGetKey(ref_window->getGLFWWindow(), GLFW_KEY_D) == GLFW_PRESS)
+    if (glfwGetKey(m_window->getGLFWWindow(), GLFW_KEY_D) == GLFW_PRESS)
         m_position += glm::normalize(glm::cross(m_front, m_up)) * m_speed;
 
     m_view_matrix = glm::lookAt(m_position, m_position + m_front, m_up);
@@ -55,36 +55,36 @@ void Camera::translate(float delta_time)
 void Camera::rotate()
 {
     double xpos, ypos;
-    glfwGetCursorPos(ref_window->getGLFWWindow(), &xpos, &ypos);
+    glfwGetCursorPos(m_window->getGLFWWindow(), &xpos, &ypos);
 
-    if (glfwGetMouseButton(ref_window->getGLFWWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
+    if (glfwGetMouseButton(m_window->getGLFWWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE)
     {
-        glfwSetInputMode(ref_window->getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        last_x_mouse_pos = xpos;
-        last_y_mouse_pos = ypos;
+        glfwSetInputMode(m_window->getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        m_last_x_mouse_pos = xpos;
+        m_last_y_mouse_pos = ypos;
         return;
     }
 
-    glfwSetInputMode(ref_window->getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(m_window->getGLFWWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 
-    float x_offset = xpos - last_x_mouse_pos;
-    float y_offset = ypos - last_y_mouse_pos;
+    float x_offset = xpos - m_last_x_mouse_pos;
+    float y_offset = ypos - m_last_y_mouse_pos;
 
-    last_x_mouse_pos = xpos;
-    last_y_mouse_pos = ypos;
+    m_last_x_mouse_pos = xpos;
+    m_last_y_mouse_pos = ypos;
 
     x_offset *= m_sensitivity;
     y_offset *= m_sensitivity;
 
 
-    yaw += x_offset;
-    pitch -= y_offset;
+    m_yaw += x_offset;
+    m_pitch -= y_offset;
 
-    if (pitch > 89.0f)
-        pitch = 89.0f;
-    if (pitch < -89.0f)
-        pitch = -89.0f;
+    if (m_pitch > 89.0f)
+        m_pitch = 89.0f;
+    if (m_pitch < -89.0f)
+        m_pitch = -89.0f;
 
     updateCameraVectors();
 }
@@ -92,9 +92,9 @@ void Camera::rotate()
 void Camera::updateCameraVectors()
 {
     glm::vec3 front;
-    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-    front.y = sin(glm::radians(pitch));
-    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
+    front.y = sin(glm::radians(m_pitch));
+    front.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
     m_front = glm::normalize(front);
     // also re-calculate the Right and Up vector
     m_right = glm::normalize(glm::cross(m_front, up));
@@ -112,15 +112,15 @@ void Camera::update(float delta_time)
         return;
     }
 
-    camX = sin(glfwGetTime()) * radius;
-    camY = cos(glfwGetTime()) * radius;
-    m_view_matrix = glm::lookAt(glm::vec3(camX, 0.0f, camY), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    m_camX = sin(glfwGetTime()) * m_radius;
+    m_camY = cos(glfwGetTime()) * m_radius;
+    m_view_matrix = glm::lookAt(glm::vec3(m_camX, 0.0f, m_camY), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void Camera::updateAspectRatio()
 {
-    int width = ref_window->m_width;
-    int height = ref_window->m_height;
+    int width = m_window->m_width;
+    int height = m_window->m_height;
     if (height == 0) height = 1;
     m_aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 }
