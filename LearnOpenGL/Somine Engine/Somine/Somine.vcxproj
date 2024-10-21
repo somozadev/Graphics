@@ -234,6 +234,7 @@
     <Content Include="resources\textures\container.jpg" />
     <Content Include="resources\textures\happy.png" />
     <Content Include="resources\textures\terrain_heightmap.png" />
+    <Content Include="resources\textures\tough_grass.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="resources\shaders\multipass\diferred\" />

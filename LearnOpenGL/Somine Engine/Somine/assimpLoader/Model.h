@@ -23,6 +23,7 @@ public:
 protected:
     const Shader* m_shader; 
     vector<Mesh> m_meshes;
+    unsigned int textureFromFile(const char* c_str, const string& string);
 
 private:
     vector<Texture> m_textures_loaded;
@@ -31,6 +32,5 @@ private:
     void loadModel(string const& path);
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-    unsigned int textureFromFile(const char* c_str, const string& string);
     vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, string typeName);
 };

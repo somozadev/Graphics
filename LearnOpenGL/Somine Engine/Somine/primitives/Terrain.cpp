@@ -1,64 +1,120 @@
 ﻿#include "Terrain.h"
-
+#include <cstdlib>
+#include <ctime>
 #include <iostream>
 
 #include "../stb_image.h"
 
-Terrain::Terrain( const std::string& heightmapPath, float scale, int subdivisions, float heightMultiplier) :  PlanePrimitive(scale, subdivisions),  m_heightMultiplier(heightMultiplier)
+Terrain::Terrain(int scale, int subdivision, float heightScale, const std::string& texturePath)
+    : m_width(scale), m_depth(scale), m_heightScale(heightScale), m_subdivision(subdivision), m_texturePath(texturePath)
 {
-    loadHeightmap(heightmapPath);
-    //generateTerrainMesh();
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+    initVertexAndIndices();
+    generateMesh();
 }
-void Terrain::generateTerrainMesh()
+
+void Terrain::initVertexAndIndices()
 {
-    if (m_heightmapData.empty()) {
-        std::cerr << "Heightmap data is empty. Cannot generate terrain." << std::endl;
-        return;
-    }
+    float halfWidth = m_width / 2.0f;
+    float halfDepth = m_depth / 2.0f;
+    float deltaX = m_width / m_subdivision;
+    float deltaZ = m_depth / m_subdivision;
+    float textureRepeatFactor = 4.0f;
 
-    int vertexCount = 0;
-
+    m_vertices.clear();
+    
     for (int z = 0; z <= m_subdivision; ++z)
     {
         for (int x = 0; x <= m_subdivision; ++x)
         {
-            // Calculate the corresponding pixel in the heightmap
-            int mapX = static_cast<int>((x / static_cast<float>(m_subdivision)) * (m_heightmapWidth - 1));
-            int mapZ = static_cast<int>((z / static_cast<float>(m_subdivision)) * (m_heightmapHeight - 1));
+            float posX = -halfWidth + x * deltaX;
+            float posZ = -halfDepth + z * deltaZ;
 
-            // Get the height value from the heightmap and scale it
-            // float heightValue = m_heightmapData[mapZ * m_heightmapWidth + mapX];
+            float posY = static_cast<float>(std::rand()) / RAND_MAX * m_heightScale - (m_heightScale / 2.0f);
 
-            float heightValue = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-            // Modify the Y position of the vertex
-            m_meshes[0].m_vertices[vertexCount].position.y = heightValue * m_heightMultiplier;
-        
-            ++vertexCount;
+            float texCoordX = static_cast<float>(x) / m_subdivision * textureRepeatFactor;
+            float texCoordZ = static_cast<float>(z) / m_subdivision * textureRepeatFactor;
+
+            m_vertices.emplace_back(Vertex{
+                {posX, posY, posZ},
+                {0.0f, 1.0f, 0.0f},
+                {texCoordX, texCoordZ}
+            });
         }
     }
 
-    // Call the original function to create the mesh from vertices and indices
-    generateMesh();
+    m_indices.clear();
+    for (int z = 0; z < m_subdivision; ++z)
+    {
+        for (int x = 0; x < m_subdivision; ++x)
+        {
+            int topLeft = z * (m_subdivision + 1) + x;
+            int topRight = topLeft + 1;
+            int bottomLeft = (z + 1) * (m_subdivision + 1) + x;
+            int bottomRight = bottomLeft + 1;
+
+            m_indices.push_back(topLeft);
+            m_indices.push_back(bottomLeft);
+            m_indices.push_back(topRight);
+
+            m_indices.push_back(bottomLeft);
+            m_indices.push_back(bottomRight);
+            m_indices.push_back(topRight);
+        }
+    }
 }
-void Terrain::loadHeightmap(const std::string& heightmapPath)
+
+void Terrain::generateMesh()
 {
-    int channels;
-    unsigned char* data = stbi_load(heightmapPath.c_str(), &m_heightmapWidth, &m_heightmapHeight, &channels, STBI_grey);
-    if (!data)
+    if (!m_texturePath.empty())
     {
-        std::cerr << "Failed to load heightmap: " << heightmapPath << std::endl;
-        return;
+        Texture texture;
+        texture.id = textureFromFile(m_texturePath.c_str(), "");
+        texture.type = "texture_diffuse";
+        texture.path = m_texturePath;
+        m_textures.push_back(texture);
+    }
+    Mesh terrainMesh(m_vertices, m_indices, m_textures);
+    addMesh(terrainMesh);
+}
+
+unsigned Terrain::textureFromFile(const char* path, const std::string& directory)
+{
+    std::string filename = std::string(path);
+    if (!directory.empty())
+        filename = directory + '/' + filename;
+
+    GLuint textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Failed to load texture: " << path << std::endl;
+        stbi_image_free(data);
     }
 
-    // Resize the vector to store the height data
-    m_heightmapData.resize(m_heightmapWidth * m_heightmapHeight);
-
-    // Normalize the heightmap data (grayscale values between 0 and 1)
-    for (int i = 0; i < m_heightmapWidth * m_heightmapHeight; ++i)
-    {
-        m_heightmapData[i] = data[i] / 255.0f;
-    }
-
-    // Free the image data
-    stbi_image_free(data);
+    return textureID;
 }

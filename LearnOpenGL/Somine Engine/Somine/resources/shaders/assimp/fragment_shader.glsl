@@ -13,9 +13,17 @@ uniform sampler2D texture_specular1;
 
 
 
-void main()
+
+void debugLight()
 {
-   vec3 light_color = vec3(1.0, 1.0, 1.0); 
+vec3 light_direction = normalize(light_pos - fragment_position);
+    fragment_color = vec4(light_direction, 1.0); 
+}
+    
+    
+    void defaultMain()
+    {
+      vec3 light_color = vec3(1.0, 1.0, 1.0); 
    vec3 object_color = vec3(1.0,1.0,1.0); 
    float ambient_strength = 0.24;
    vec3 ambient = ambient_strength * light_color;
@@ -43,5 +51,13 @@ void main()
         vec3 test = result * diffuse_texture;
         fragment_color = vec4(test, 1.0); 
     //  }
-
+    }
+    
+    
+    
+void main()
+{    
+    
+ //debugLight();
+defaultMain();
 }

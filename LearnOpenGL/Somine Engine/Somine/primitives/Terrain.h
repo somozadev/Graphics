@@ -1,17 +1,23 @@
 ﻿#pragma once
-#include "PlanePrimitive.h"
-#include "../TextureManager.h"
+#include "../assimpLoader/Model.h"
+#include "../assimpLoader/Texture.h"
 
-class Terrain : public PlanePrimitive
+class Terrain : public Model
 {
-    const char* m_height_map_path;
-    int m_textureID;
-
-    int m_heightmapWidth, m_heightmapHeight;
-    float m_heightMultiplier;
-    std::vector<float> m_heightmapData; 
 public:
-    Terrain( const std::string& heightmapPath, float scale = 1.0f, int subdivisions = 20, float heightMultiplier = 5.0f);
-    void generateTerrainMesh();
-    void loadHeightmap(const std::string& heightmapPath);
+    Terrain(int scale, int subdivision, float heightScale, const std::string& texturePath);
+
+private:
+    void initVertexAndIndices();
+    void generateMesh();
+    unsigned textureFromFile(const char* path, const std::string& directory);
+
+    float m_width;
+    float m_depth;
+    float m_heightScale;
+    float m_subdivision = 20.0f;
+    std::string m_texturePath;
+    std::vector<Vertex> m_vertices;
+    std::vector<GLuint> m_indices;
+    std::vector<Texture> m_textures;
 };

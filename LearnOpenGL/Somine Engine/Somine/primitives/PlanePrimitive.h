@@ -8,10 +8,10 @@ public:
     PlanePrimitive(int scale, int subdivision);
 
 private:
-    void initVertexAndIndices();
 
 protected:
-    void generateMesh();
+    void virtual initVertexAndIndices();
+    void virtual generateMesh();
     float m_width;
     float m_depth;
     std::vector<Vertex> m_vertices;

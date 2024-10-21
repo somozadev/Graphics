@@ -5,6 +5,7 @@
 
 #include "Camera.h"
 #include "Helper.h"
+#include "Macros.h"
 #include "OldMesh.h"
 #include "Shader.h"
 #include "Window.h"
@@ -24,7 +25,7 @@ private:
     std::unordered_map<std::string,const Shader*> m_shaders;
     Camera m_camera;
     std::vector<GLfloat> m_bg_color;
-    std::vector<Model> m_models;
+    std::vector<Model*> m_models;
 
     float m_current_frame;
     float m_last_frame;
@@ -32,15 +33,9 @@ private:
     bool m_wireframe{false};
     bool m_see_grid{true};
     Window* m_window;
-    Terrain m_terrain{"resources/textures/happy.png", 1.0f, 20, 1.0f};
-    Model m_ar47{"resources/models/ar/Ar-47.fbx"};
-    Model m_cup{"resources/models/cup/coffee_cup_fbx.fbx"};
-    CubePrimitive m_primitiveTestCube{};
-    PlanePrimitive m_primitiveTestPlane{};
-    SpherePrimitive m_primitiveTestSphere{};
-    SpherePrimitive m_light{};
-    PyramidPrimitive m_primitiveTestPyramid{};
-    Model m_backpack{"resources/models/backpack/backpack.obj"};
+    
+    SpherePrimitive* m_light = NEW(SpherePrimitive);
+    
     void drawGrid(glm::mat4 projection,glm::mat4 view);
     void setupMatrices(glm::mat4 projection,glm::mat4 view);
 public:
