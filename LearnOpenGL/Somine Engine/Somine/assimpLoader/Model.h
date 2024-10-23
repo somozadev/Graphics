@@ -18,8 +18,10 @@ public:
     void draw(const Shader* shader);
     void draw();
     void addMesh(const Mesh& mesh);
-    Transform transform;
+    Transform* transform;
     void setShaderRef(const Shader* shader);
+    ~Model();
+
 protected:
     const Shader* m_shader; 
     vector<Mesh> m_meshes;
@@ -28,7 +30,6 @@ protected:
 private:
     vector<Texture> m_textures_loaded;
     string m_directory;
-
     void loadModel(string const& path);
     void processNode(aiNode* node, const aiScene* scene);
     Mesh processMesh(aiMesh* mesh, const aiScene* scene);

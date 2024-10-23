@@ -41,10 +41,6 @@ void Renderer::initShadersMap()
         "assimp",NEW(Shader, "resources/shaders/assimp/vertex_shader.glsl",
                      "resources/shaders/assimp/fragment_shader.glsl")
     });
-    //
-    // m_shaders.insert({
-    //     "terrain", Shader("resources/shaders/terrain/vertex_shader.glsl", "resources/shaders/terrain/fragment_shader.glsl")
-    // });
 }
 
 void Renderer::init()
@@ -64,68 +60,65 @@ void Renderer::initModels()
 {
     m_models.emplace_back(m_light);
     Model* light = m_models.back();
-    light->transform.move(-40.0, 2.0, 15.0);
-    light->transform.scale(0.2, 0.2, 0.2);
+    light->transform->move(40.0, 2.0, 15.0);
+    light->transform->scale(0.2, 0.2, 0.2);
     light->setShaderRef(m_shaders["light"]);
 
     m_models.emplace_back(NEW(Terrain, 10, 50, 0.20f, "resources/textures/tough_grass.jpg"));
     Model* terrain = m_models.back();
-    terrain->transform.move(0.0f, -2.0f, 0.0f);
-    terrain->transform.scale(0.5f, 0.5f, 0.5f);
-    terrain->transform.rotate(0.0f, 0.0f, 0.0f);
+    terrain->transform->move(0.0f, -2.0f, 0.0f);
+    terrain->transform->scale(0.5f, 0.5f, 0.5f);
+    terrain->transform->rotate(0.0f, 0.0f, 0.0f);
     terrain->setShaderRef(m_shaders["assimp"]);
 
     m_models.emplace_back(NEW(Model, "resources/models/ar/Ar-47.fbx"));
     Model* ar47 = m_models.back();
-    ar47->transform.move(-8.0f, 0.0f, 0.0f);
-    ar47->transform.scale(1.0f, 1.0f, 1.0f);
-    ar47->transform.rotate(-90.0f, 0.0f, 0.0f);
+    ar47->transform->move(-8.0f, 0.0f, 0.0f);
+    ar47->transform->scale(1.0f, 1.0f, 1.0f);
+    ar47->transform->rotate(-90.0f, 0.0f, 0.0f);
     ar47->setShaderRef(m_shaders["assimp"]);
 
-    // m_models.emplace_back(NEW(Model,"resources/models/backpack/backpack.obj"));
-    // auto& backpack = m_models.back();
-    // backpack.transform.move(0.0f, 0.0f, 0.0f);
-    // backpack.transform.scale(0.10f, 0.10f, 0.10f);
-    // backpack.transform.rotate(0.0f, 0.0f, 0.0f);
-    // backpack.setShaderRef(m_shaders["assimp"]);
+    m_models.emplace_back(NEW(Model, "resources/models/backpack/backpack.obj"));
+    Model* backpack = m_models.back();
+    backpack->transform->move(0.0f, 0.0f, 0.0f);
+    backpack->transform->scale(0.10f, 0.10f, 0.10f);
+    backpack->transform->rotate(0.0f, 0.0f, 0.0f);
+    backpack->setShaderRef(m_shaders["assimp"]);
 
-    //m_models.emplace_back(Model{"resources/models/cup/coffee_cup_fbx.fbx"});
-    //auto& cup = m_models.back();
-    //cup.transform.move(2.0f, 0.0f, 0.0f);
-    // cup.transform.scale(1.5f, 1.5f, 1.5f);
-    // cup.transform.rotate(270.0f, 0.0f, 0.0f);
-    // cup.setShaderRef(m_shaders["assimp"]);
-    //
-    // m_models.emplace_back(CubePrimitive{});
-    // auto& primitiveTestCube = m_models.back();
-    // primitiveTestCube.transform.move(-5.0f, 0.0f, 0.0f);
-    // primitiveTestCube.transform.scale(0.5f, 0.5f, 0.5f);
-    // primitiveTestCube.transform.rotate(0.0f, 0.0f, 0.0f);
-    // primitiveTestCube.setShaderRef(m_shaders["assimp"]);
-    //
-    //
+    m_models.emplace_back(NEW(Model, "resources/models/cup/coffee_cup_fbx.fbx"));
+    Model* cup = m_models.back();
+    cup->transform->move(2.0f, 0.0f, 0.0f);
+    cup->transform->scale(1.5f, 1.5f, 1.5f);
+    cup->transform->rotate(270.0f, 0.0f, 0.0f);
+    cup->setShaderRef(m_shaders["assimp"]);
 
+    // m_models.emplace_back(NEW(CubePrimitive));
+    // Model* primitiveTestCube = m_models.back();
+    // primitiveTestCube->transform->move(-5.0f, 0.0f, 0.0f);
+    // primitiveTestCube->transform->scale(0.5f, 0.5f, 0.5f);
+    // primitiveTestCube->transform->rotate(0.0f, 0.0f, 0.0f);
+    // primitiveTestCube->setShaderRef(m_shaders["assimp"]);
     //
-    // m_models.emplace_back(SpherePrimitive{});
-    // auto& primitiveTestSphere = m_models.back();
-    // primitiveTestSphere.transform.move(-10.0f, 0.0f, 0.0f);
-    // primitiveTestSphere.transform.scale(0.5f, 0.5f, 0.5f);
-    // primitiveTestSphere.transform.rotate(0.0f, 0.0f, 0.0f);
-    // primitiveTestSphere.setShaderRef(m_shaders["assimp"]);
+    // m_models.emplace_back(NEW(SpherePrimitive));
+    // Model* primitiveTestSphere = m_models.back();
+    // primitiveTestSphere->transform->move(-10.0f, 0.0f, 0.0f);
+    // primitiveTestSphere->transform->scale(0.5f, 0.5f, 0.5f);
+    // primitiveTestSphere->transform->rotate(0.0f, 0.0f, 0.0f);
+    // primitiveTestSphere->setShaderRef(m_shaders["assimp"]);
     //
-    // m_models.emplace_back(PlanePrimitive{});
-    // auto& primitiveTestPlane = m_models.back();
-    // primitiveTestPlane.transform.move(10.0f, 0.0f, 0.0f);
-    // primitiveTestPlane.transform.scale(0.5f, 0.5f, 0.5f);
-    // primitiveTestPlane.transform.rotate(0.0f, 0.0f, 0.0f);
-    // primitiveTestPlane.setShaderRef(m_shaders["assimp"]);
+    // m_models.emplace_back(NEW(PlanePrimitive));
+    // Model* primitiveTestPlane = m_models.back();
+    // primitiveTestPlane->transform->move(10.0f, 0.0f, 0.0f);
+    // primitiveTestPlane->transform->scale(0.5f, 0.5f, 0.5f);
+    // primitiveTestPlane->transform->rotate(0.0f, 0.0f, 0.0f);
+    // primitiveTestPlane->setShaderRef(m_shaders["assimp"]);
     //
-    // m_models.emplace_back(PyramidPrimitive{});
-    // auto& primitiveTestPyramid = m_models.back();
-    // primitiveTestPyramid.transform.move(15.0f, 0.0f, 0.0f);
-    // primitiveTestPyramid.transform.scale(0.5f, 0.5f, 0.5f);
-    // primitiveTestPyramid.transform.rotate(0.0f, 0.0f, 0.0f);
-    // primitiveTestPyramid.setShaderRef(m_shaders["assimp"]);
+    // m_models.emplace_back(NEW(PyramidPrimitive));
+    // Model* primitiveTestPyramid = m_models.back();
+    // primitiveTestPyramid->transform->move(15.0f, 0.0f, 0.0f);
+    // primitiveTestPyramid->transform->scale(0.5f, 0.5f, 0.5f);
+    // primitiveTestPyramid->transform->rotate(0.0f, 0.0f, 0.0f);
+    // primitiveTestPyramid->setShaderRef(m_shaders["assimp"]);
 }
 
 
@@ -156,6 +149,7 @@ void Renderer::update()
     ImguiHandler::addCheckBox("wireframe", &m_wireframe);
     ImguiHandler::addCheckBox("grid", &m_see_grid);
 
+    ImguiHandler::addSingleModel("Light position", m_light->transform);
     ImguiHandler::addColorModifier("bg color", m_bg_color);
     ImguiHandler::draw();
 }
@@ -172,7 +166,7 @@ void Renderer::setupMatrices(glm::mat4 projection, glm::mat4 view)
 
 
     m_shaders["assimp"]->use();
-    m_shaders["assimp"]->setVec3("light_position", m_light->transform.position);
+    m_shaders["assimp"]->setVec3("light_position", m_light->transform->position);
 }
 
 void Renderer::drawGrid(glm::mat4 projection, glm::mat4 view)
@@ -192,4 +186,8 @@ Renderer::~Renderer()
 
     for (auto shader : m_shaders)
         DELETE(const_cast<Shader*>(shader.second), Shader);
+
+
+    for (auto model : m_models)
+        DELETE(model, Model);
 }

@@ -4,23 +4,29 @@
 #include <__msvc_filebuf.hpp>
 #include <__msvc_filebuf.hpp>
 
+#include "../Macros.h"
 #include "../stb_image.h"
 
 Model::Model(std::string const& path)
 {
-    transform = Transform();
+    transform = NEW(Transform);
     loadModel(path);
 }
 
 Model::Model()
 {
-    transform = Transform();
+    transform = NEW(Transform);
+}
+
+Model::~Model()
+{
+    DELETE(transform, Transform);
 }
 
 
 void Model::draw(const Shader* shader)
 {
-    shader->setUniformMatrix4fv("model", transform.getModelMatrix());
+    shader->setUniformMatrix4fv("model", transform->getModelMatrix());
     for (GLuint i = 0; i < m_meshes.size(); i++)
         m_meshes[i].draw(shader);
 }
@@ -28,7 +34,7 @@ void Model::draw(const Shader* shader)
 void Model::draw()
 {
     m_shader->use();
-    m_shader->setUniformMatrix4fv("model", transform.getModelMatrix());
+    m_shader->setUniformMatrix4fv("model", transform->getModelMatrix());
     for (GLuint i = 0; i < m_meshes.size(); i++)
         m_meshes[i].draw(m_shader);
 }

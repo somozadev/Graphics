@@ -21,6 +21,14 @@ void ImguiHandler::addColorModifier(const char* text,vector<GLfloat>& colorRefer
     ImGui::ColorEdit3(text, colorReference.data());
 }
 
+void ImguiHandler::addSingleModel(const char* text,Transform* transform)
+{
+    float temp[3] = { transform->position.x, transform->position.y, transform->position.z};
+    
+    ImGui::SliderFloat3(text, temp, -100.0f, 100.0f);
+    transform->move(temp[0], temp[1], temp[2]);
+}
+
 
 void ImguiHandler::addCheckBox(const char* text, bool* reference)
 {
