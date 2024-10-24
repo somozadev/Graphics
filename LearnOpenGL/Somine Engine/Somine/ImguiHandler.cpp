@@ -16,15 +16,15 @@ void ImguiHandler::startWindow(const char* name)
     ImGui::Begin(name);
 }
 
-void ImguiHandler::addColorModifier(const char* text,vector<GLfloat>& colorReference)
+void ImguiHandler::addColorModifier(const char* text, vector<GLfloat>& colorReference)
 {
     ImGui::ColorEdit3(text, colorReference.data());
 }
 
-void ImguiHandler::addSingleModel(const char* text,Transform* transform)
+void ImguiHandler::addSingleModel(const char* text, Transform* transform)
 {
-    float temp[3] = { transform->position.x, transform->position.y, transform->position.z};
-    
+    float temp[3] = {transform->position.x, transform->position.y, transform->position.z};
+
     ImGui::SliderFloat3(text, temp, -100.0f, 100.0f);
     transform->move(temp[0], temp[1], temp[2]);
 }
@@ -56,4 +56,12 @@ void ImguiHandler::endWindow()
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+}
+
+void ImguiHandler::update(bool &wireframe,bool &see_grid, Model* light,std::vector<GLfloat> bg_color)
+{
+   addCheckBox("wireframe", &wireframe);
+   addCheckBox("grid", &see_grid);
+   addSingleModel("Light position", light->transform);
+   addColorModifier("bg color", bg_color);
 }

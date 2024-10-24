@@ -14,4 +14,5 @@ public:
     static void scrollGroup(std::vector<Model> models);
     static void draw();
     static void endWindow();
+    static void update(bool &wireframe,bool &see_grid, Model* light,std::vector<GLfloat> bg_color);
 };
