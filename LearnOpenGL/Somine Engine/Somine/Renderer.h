@@ -20,10 +20,9 @@
 class Renderer
 {
 private:
-
     OldMesh m_grid;
-    std::unordered_map<std::string,const Shader*> m_shaders;
     Camera m_camera;
+    std::unordered_map<std::string, const Shader*> m_shaders;
     std::vector<GLfloat> m_bg_color;
     std::vector<Model*> m_models;
 
@@ -32,8 +31,7 @@ private:
 
     bool m_wireframe{true};
     bool m_see_grid{true};
-    Window* m_window;
-    
+
     SpherePrimitive* m_light = NEW(SpherePrimitive);
 
 
@@ -42,12 +40,13 @@ private:
     GLuint m_quadMeshVAO{0};
     GLuint m_RBO{0};
 
-    
-    
-    void drawGrid(glm::mat4 projection,glm::mat4 view);
-    void setupMatrices(glm::mat4 projection,glm::mat4 view);
+
+    void drawGrid(glm::mat4 projection, glm::mat4 view);
+    void setupMatrices(glm::mat4 projection, glm::mat4 view);
     void calcDeltaTime();
+
 public:
+    Window* m_window;
     float m_delta_time;
     Renderer(Window* window = nullptr);
     void init();
@@ -55,4 +54,5 @@ public:
     void initShadersMap();
     void update();
     ~Renderer();
+    void resizeFramebuffer(int width, int height);
 };

@@ -7,7 +7,8 @@ uniform sampler2D source_texture;
 
 void main()
 {
-    vec3 my_texture =  texture(source_texture,tex_coords).rgb;
-    fragment_color = vec4(my_texture, 1.0);
+     fragment_color =texture(source_texture, tex_coords);
+    
+  // fragment_color = vec4(1.0, 0.0, 0.0, 1.0);
 
 }

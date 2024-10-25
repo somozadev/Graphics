@@ -4,6 +4,8 @@
 #include <glm/glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
+#include <GL/gl.h>
+
 #include "Helper.h"
 #include "ImguiHandler.h"
 #include "Macros.h"
@@ -15,6 +17,7 @@
 #include "primitives/PyramidPrimitive.h"
 #include "primitives/SpherePrimitive.h"
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 Renderer::Renderer(Window* window) : m_camera(window)
 {
@@ -23,6 +26,8 @@ Renderer::Renderer(Window* window) : m_camera(window)
     init();
     initShadersMap();
     initModels();
+    glfwSetFramebufferSizeCallback(window->getGLFWWindow(), framebuffer_size_callback);
+    glfwSetWindowUserPointer(window->getGLFWWindow(), this);
 }
 
 void Renderer::initShadersMap()
@@ -43,7 +48,7 @@ void Renderer::initShadersMap()
     });
     m_shaders.insert({
         "fbo",NEW(Shader, "resources/shaders/multipass/TextureFBO/vertex_shader.glsl",
-                     "resources/shaders/multipass/TextureFBO/fragment_shader.glsl")
+                  "resources/shaders/multipass/TextureFBO/fragment_shader.glsl")
     });
 }
 
@@ -134,31 +139,33 @@ void Renderer::initModels()
     m_quad_vertices[3] = glm::vec2(-1, 1);
 
     GLuint quadMeshVBO;
-    glGenBuffers(1, &quadMeshVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadMeshVBO);
-    glBufferData(GL_ARRAY_BUFFER, m_quad_vertices.size() * sizeof(glm::vec2), m_quad_vertices.data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glGenVertexArrays(1, &m_quadMeshVAO);
     glBindVertexArray(m_quadMeshVAO);
+
+    glGenBuffers(1, &quadMeshVBO);
     glBindBuffer(GL_ARRAY_BUFFER, quadMeshVBO);
+    glBufferData(GL_ARRAY_BUFFER, m_quad_vertices.size() * sizeof(glm::vec2), m_quad_vertices.data(), GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2,GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-
     GLint m_viewport_size[4];
     glGetIntegerv(GL_VIEWPORT, m_viewport_size);
+
+
     //quadmesh to texture
-
-
     glGenFramebuffers(1, &m_FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 
     glGenTextures(1, &m_textureFBO);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_textureFBO);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_viewport_size[2], m_viewport_size[3], 0, GL_RGB,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLint)m_window->m_width, (GLint)m_window->m_height, 0, GL_RGB,
                  GL_UNSIGNED_BYTE, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -170,7 +177,7 @@ void Renderer::initModels()
     //depth info
     glGenRenderbuffers(1, &m_RBO);
     glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_viewport_size[2], m_viewport_size[3]);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, (GLint)m_window->m_width, (GLint)m_window->m_height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
@@ -202,6 +209,7 @@ void Renderer::update()
 
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0); //draw to the screen
+    glViewport(0, 0, m_window->m_width, m_window->m_height);
 
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -209,16 +217,16 @@ void Renderer::update()
     //use shader corresponding the fbo technicque (4.ex. fxaa)
 
 
-    
-    //texture containing the scene
+    m_shaders["fbo"]->use();
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_textureFBO);
+    m_shaders["fbo"]->setInt("source_texture", 0);
+
 
     glDisable(GL_DEPTH_TEST);
     glBindVertexArray(m_quadMeshVAO);
-    m_shaders["fbo"]->use();
-    m_shaders["fbo"]->setInt("source_texture", m_textureFBO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
+    glBindVertexArray(0);
 
 
     ImguiHandler::addCheckBox("wireframe", &m_wireframe);
@@ -261,6 +269,41 @@ void Renderer::drawGrid(glm::mat4 projection, glm::mat4 view)
     glDrawArrays(GL_LINES, 0, m_grid.getVertices().size() / 3);
     glBindVertexArray(0);
 }
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    renderer->m_window->m_width = width;
+    renderer->m_window->m_height = height;
+    if (renderer) renderer->resizeFramebuffer(width, height);
+    glViewport(0, 0, width, height);
+}
+
+void Renderer::resizeFramebuffer(int width, int height)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+
+    // Delete old texture
+    glDeleteTextures(1, &m_textureFBO);
+    // Generate and bind a new texture with the updated size
+    glGenTextures(1, &m_textureFBO);
+    glBindTexture(GL_TEXTURE_2D, m_textureFBO);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+    // Texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureFBO, 0);
+
+    // Resize depth and stencil buffer if needed
+    glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 
 Renderer::~Renderer()
 {

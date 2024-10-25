@@ -5,6 +5,6 @@ out vec2 tex_coords;
 
 void main()
 {
-    gl_Position =vec4(vertex_position.x, vertex_position.y, 0.0, 1.0);
-    tex_coords = (vertex_position + vec2(1,1)) * 0.5;    
+    tex_coords = vertex_position * 0.5 + 0.5; 
+    gl_Position =vec4(vertex_position, 0.0, 1.0);
 }
