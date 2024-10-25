@@ -19,5 +19,6 @@ void main()
     tex_coords = vertex_tex_coord;
     normal = vertex_normals; 
     light_pos = light_position; 
+    light_pos = vec3(-1000,-100,-100); 
     fragment_position = vec3(model*vec4(vertex_position, 1.0));
 }
