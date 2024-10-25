@@ -41,6 +41,10 @@ void Renderer::initShadersMap()
         "assimp",NEW(Shader, "resources/shaders/assimp/vertex_shader.glsl",
                      "resources/shaders/assimp/fragment_shader.glsl")
     });
+    m_shaders.insert({
+        "fbo",NEW(Shader, "resources/shaders/multipass/TextureFBO/vertex_shader.glsl",
+                     "resources/shaders/multipass/TextureFBO/fragment_shader.glsl")
+    });
 }
 
 void Renderer::init()
@@ -194,6 +198,7 @@ void Renderer::update()
 
     for (auto model : m_models)
         model->draw();
+    drawGrid(projection, view);
 
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0); //draw to the screen
@@ -202,14 +207,18 @@ void Renderer::update()
     glClear(GL_COLOR_BUFFER_BIT);
 
     //use shader corresponding the fbo technicque (4.ex. fxaa)
+
+
+    
     //texture containing the scene
     glBindTexture(GL_TEXTURE_2D, m_textureFBO);
 
     glDisable(GL_DEPTH_TEST);
     glBindVertexArray(m_quadMeshVAO);
+    m_shaders["fbo"]->use();
+    m_shaders["fbo"]->setInt("source_texture", m_textureFBO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    drawGrid(projection, view);
 
 
     ImguiHandler::addCheckBox("wireframe", &m_wireframe);
