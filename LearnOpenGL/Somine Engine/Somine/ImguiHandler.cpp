@@ -44,6 +44,18 @@ void ImguiHandler::scrollGroup(std::vector<Model> models)
     }
 }
 
+void ImguiHandler::mainLight(BaseLight* light)
+{
+    ImGui::BeginGroup(); 
+    ImGui::Text("Main Light");
+    float temp[3] = {light->transform->rotation.x, light->transform->rotation.y, light->transform->rotation.z};
+    ImGui::SliderFloat3("direction", temp, -360.0f, 360.0f);
+    light->transform->rotate(temp[0], temp[1], temp[2]);
+    ImGui::SliderFloat("Ambient", &light->m_ambient_intensity, 0.0f, 1.0f);
+    ImGui::ColorEdit3("Color", &light->m_color[0]);
+    ImGui::EndGroup();
+}
+
 void ImguiHandler::draw()
 {
     ImGui::End();

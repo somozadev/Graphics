@@ -19,12 +19,13 @@ public:
     void draw();
     void addMesh(const Mesh& mesh);
     Transform* transform;
-    void setShaderRef(const Shader* shader);
-    ~Model();
-
+    virtual void setShaderRef(const Shader* shader);
+    virtual ~Model();
+    const Material& GetMaterial();
 protected:
     const Shader* m_shader; 
     vector<Mesh> m_meshes;
+    std::vector<Material> m_materials;
     unsigned int textureFromFile(const char* c_str, const string& string);
 
 private:

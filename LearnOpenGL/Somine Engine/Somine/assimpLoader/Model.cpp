@@ -16,11 +16,22 @@ Model::Model(std::string const& path)
 Model::Model()
 {
     transform = NEW(Transform);
+    m_materials.push_back(Material());
+    m_materials[0].ambient_color = glm::vec3(1.0f, 1.0f, 1.0f);
 }
 
 Model::~Model()
 {
     DELETE(transform, Transform);
+}
+
+const Material& Model::GetMaterial() //placeholder 
+{
+    for (auto& m_material : m_materials)
+    {
+        if (m_material.ambient_color != glm::vec3(0.0f, 0.0f, 0.0f))
+            return m_material;
+    }
 }
 
 
@@ -47,6 +58,12 @@ void Model::addMesh(const Mesh& mesh)
 void Model::setShaderRef(const Shader* shader)
 {
     m_shader = shader;
+    if (m_materials.empty())
+    {
+        Material mat = Material();
+        m_materials.push_back(mat);
+    }
+    m_shader->setMaterial("material", m_materials[0]);
 }
 
 void Model::loadModel(std::string const& path)
@@ -60,6 +77,7 @@ void Model::loadModel(std::string const& path)
         return;
     }
     m_directory = path.substr(0, path.find_last_of('/'));
+    m_materials.resize(scene->mNumMaterials);
     processNode(scene->mRootNode, scene);
 }
 
@@ -69,6 +87,24 @@ void Model::processNode(aiNode* node, const aiScene* scene)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
         m_meshes.push_back(processMesh(mesh, scene));
+    }
+    for (int i = 0; i < scene->mNumMaterials; ++i)
+    {
+        aiMaterial* material = scene->mMaterials[i];
+        aiColor3D ambient_color(0.0f, 0.0f, 0.0f);
+        if (material->Get(AI_MATKEY_COLOR_AMBIENT, ambient_color) == AI_SUCCESS)
+        {
+            m_materials[i].ambient_color.r = ambient_color.r;
+            m_materials[i].ambient_color.g = ambient_color.g;
+            m_materials[i].ambient_color.b = ambient_color.b;
+        }
+        aiColor3D diffuse_color(0.0f, 0.0f, 0.0f);
+        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, ambient_color) == AI_SUCCESS)
+        {
+            m_materials[i].diffuse_color.r = diffuse_color.r;
+            m_materials[i].diffuse_color.g = diffuse_color.g;
+            m_materials[i].diffuse_color.b = diffuse_color.b;
+        }
     }
     for (GLuint i = 0; i < node->mNumChildren; i++)
     {
@@ -81,6 +117,7 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
     std::vector<Vertex> vertices;
     std::vector<GLuint> indices;
     std::vector<Texture> textures;
+
     for (GLuint i = 0; i < mesh->mNumVertices; i++)
     {
         Vertex vertex;
@@ -228,6 +265,7 @@ unsigned Model::textureFromFile(const char* path, const std::string& directory)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         stbi_image_free(data);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
     else
     {

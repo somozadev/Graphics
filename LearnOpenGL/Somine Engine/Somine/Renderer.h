@@ -10,6 +10,8 @@
 #include "Shader.h"
 #include "Window.h"
 #include "assimpLoader/Model.h"
+#include "Lights/BaseLight.h"
+#include "Lights/DirectionalLight.h"
 #include "primitives/CubePrimitive.h"
 #include "primitives/PlanePrimitive.h"
 #include "primitives/PyramidPrimitive.h"
@@ -29,10 +31,10 @@ private:
     float m_current_frame;
     float m_last_frame;
 
-    bool m_wireframe{true};
+    bool m_wireframe{false};
     bool m_see_grid{true};
 
-    SpherePrimitive* m_light = NEW(SpherePrimitive);
+    DirectionalLight* m_light = NEW(DirectionalLight);
 
 
     GLuint m_FBO{0};

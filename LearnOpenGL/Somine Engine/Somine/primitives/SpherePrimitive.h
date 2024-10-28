@@ -11,7 +11,6 @@ private:
     
     std::vector<Vertex> m_vertices; 
     std::vector<GLuint> m_indices;
-    
     void generateMesh();
     void initVertexAndIndices();
     const int m_stacks;

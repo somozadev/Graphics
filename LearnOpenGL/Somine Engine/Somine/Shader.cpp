@@ -11,6 +11,8 @@
 #include <glm/glm/detail/type_mat4x4.hpp>
 #include <glm/glm/gtc/type_ptr.inl>
 
+#include "assimpLoader/Material.h"
+
 
 Shader::Shader()
 {
@@ -120,4 +122,25 @@ void Shader::setUniformMatrix4fv(const std::string &name, glm::mat4 value) const
 void Shader::setVec3(const std::string &name, glm::vec3 value) const
 {
     glUniform3fv(glGetUniformLocation(id, name.c_str()), GL_FALSE, glm::value_ptr(value));
+}
+void Shader::setLight(const std::string &colorName, glm::vec3 colorValue,const std::string &ambientName, float ambientValue ) const
+{
+    glUniform3f(glGetUniformLocation(id, colorName.c_str()), colorValue.x, colorValue.y, colorValue.z);
+    glUniform1f(glGetUniformLocation(id, ambientName.c_str()), ambientValue);
+}
+void Shader::setDirectionalLight(const std::string &ambientColorName, glm::vec3 ambientColorValue,const std::string &ambientName, float ambientValue,const std::string &diffuseName, float diffuseValue,const std::string &directionName, glm::vec3 directionValue ) const
+{
+    glUniform3f(glGetUniformLocation(id, ambientColorName.c_str()), ambientColorValue.x, ambientColorValue.y, ambientColorValue.z);
+    glUniform1f(glGetUniformLocation(id, ambientName.c_str()), ambientValue);
+    glUniform1f(glGetUniformLocation(id, diffuseName.c_str()), diffuseValue);
+    //should use local direction here 
+    glUniform3f(glGetUniformLocation(id, directionName.c_str()), directionValue.x, directionValue.y, directionValue.z);
+
+
+    
+}
+void Shader::setMaterial(const std::string &name, Material& value) const
+{
+    glUniform3f(glGetUniformLocation(id, (name+ ".ambient_color").c_str()), value.ambient_color.r,value.ambient_color.g,value.ambient_color.b);
+    glUniform3f(glGetUniformLocation(id, (name+ ".diffuse_color").c_str()), value.diffuse_color.r,value.diffuse_color.g,value.diffuse_color.b);
 }

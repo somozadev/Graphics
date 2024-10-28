@@ -152,6 +152,8 @@
     <ClCompile Include="Libraries\include\IMGUI\imgui_impl_opengl3.cpp" />
     <ClCompile Include="Libraries\include\IMGUI\imgui_tables.cpp" />
     <ClCompile Include="Libraries\include\IMGUI\imgui_widgets.cpp" />
+    <ClCompile Include="Lights\BaseLight.cpp" />
+    <ClCompile Include="Lights\DirectionalLight.cpp" />
     <ClCompile Include="Macros.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OldMesh.cpp" />
@@ -185,6 +187,8 @@
     <ClInclude Include="Libraries\include\IMGUI\imstb_rectpack.h" />
     <ClInclude Include="Libraries\include\IMGUI\imstb_textedit.h" />
     <ClInclude Include="Libraries\include\IMGUI\imstb_truetype.h" />
+    <ClInclude Include="Lights\BaseLight.h" />
+    <ClInclude Include="Lights\DirectionalLight.h" />
     <ClInclude Include="Macros.h" />
     <ClInclude Include="OldMesh.h" />
     <ClInclude Include="primitives\CubePrimitive.h" />

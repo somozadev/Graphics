@@ -10,6 +10,22 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned> indices, std::vec
     setupMesh();
 }
 
+void Mesh::createWhiteTexture()
+{
+    glGenTextures(1, &m_white_texture);
+    glBindTexture(GL_TEXTURE_2D, m_white_texture);
+
+    unsigned char whitePixel[3] = {255, 255, 255};
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, whitePixel);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void Mesh::draw(const Shader* shader)
 {
     glBindVertexArray(0);
@@ -19,6 +35,20 @@ void Mesh::draw(const Shader* shader)
     GLuint normalN = 1;
     GLuint heightN = 1;
 
+    bool hasDiffuse = false;
+    for (const auto& texture : m_textures)
+    {
+        if (texture.type == "texture_diffuse")
+        {
+            hasDiffuse = true;
+            break;
+        }
+    }
+    if (!hasDiffuse) {
+        glActiveTexture(GL_TEXTURE0); 
+        shader->setInt("texture_diffuse1", 0); 
+        glBindTexture(GL_TEXTURE_2D, m_white_texture); 
+    }
     for (GLuint i = 0; i < m_textures.size(); i++)
     {
         glActiveTexture(GL_TEXTURE0 + i);
@@ -66,8 +96,8 @@ void Mesh::setupMesh()
     //right now i have 1 VAO and 1 VBO per mesh, we can change it to be
     // 1 VAO and / or 1 VBO per model, having inside them multiple meshes
     //it might be a hardware limitation decission, pretty much based on which platform you are targetting 
-    
-    
+
+
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(1);

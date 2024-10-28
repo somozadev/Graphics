@@ -2,6 +2,7 @@
 #include <vector>
 #include <glad/glad.h>
 
+#include "Material.h"
 #include "Texture.h"
 #include "Vertex.h"
 #include "../Shader.h"
@@ -21,6 +22,8 @@ private:
     GLuint m_VBO;
     GLuint m_EBO;
     GLuint m_VAO;
+    GLuint m_white_texture;
 
+    void createWhiteTexture();
     void setupMesh();
 };

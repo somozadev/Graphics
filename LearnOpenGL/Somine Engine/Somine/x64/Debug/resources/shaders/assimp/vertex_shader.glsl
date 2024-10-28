@@ -5,20 +5,14 @@ layout (location = 2) in vec2 vertex_tex_coord;
 
 out vec2 tex_coords;
 out vec3 normal;
-out vec3 fragment_position;
-out vec3 light_pos; 
 
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
-uniform vec3 light_position;
 
 void main()
 {
     gl_Position = projection * view * model * vec4(vertex_position, 1.0);
     tex_coords = vertex_tex_coord;
     normal = vertex_normals; 
-    light_pos = light_position; 
-    light_pos = vec3(-1000,-100,-100); 
-    fragment_position = vec3(model*vec4(vertex_position, 1.0));
 }
