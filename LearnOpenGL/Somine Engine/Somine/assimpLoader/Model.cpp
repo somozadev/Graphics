@@ -16,8 +16,6 @@ Model::Model(std::string const& path)
 Model::Model()
 {
     transform = NEW(Transform);
-    m_materials.push_back(Material());
-    m_materials[0].ambient_color = glm::vec3(1.0f, 1.0f, 1.0f);
 }
 
 Model::~Model()
@@ -25,13 +23,17 @@ Model::~Model()
     DELETE(transform, Transform);
 }
 
-const Material& Model::GetMaterial() //placeholder 
+Material& Model::GetMaterial() //placeholder 
 {
     for (auto& m_material : m_materials)
     {
         if (m_material.ambient_color != glm::vec3(0.0f, 0.0f, 0.0f))
             return m_material;
     }
+    Material new_mat = Material();
+    new_mat.ambient_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    m_materials.push_back(new_mat);
+    return new_mat;
 }
 
 
@@ -58,12 +60,8 @@ void Model::addMesh(const Mesh& mesh)
 void Model::setShaderRef(const Shader* shader)
 {
     m_shader = shader;
-    if (m_materials.empty())
-    {
-        Material mat = Material();
-        m_materials.push_back(mat);
-    }
-    m_shader->setMaterial("material", m_materials[0]);
+    Material mat = GetMaterial();
+    m_shader->setMaterial("material", mat);
 }
 
 void Model::loadModel(std::string const& path)
@@ -104,6 +102,13 @@ void Model::processNode(aiNode* node, const aiScene* scene)
             m_materials[i].diffuse_color.r = diffuse_color.r;
             m_materials[i].diffuse_color.g = diffuse_color.g;
             m_materials[i].diffuse_color.b = diffuse_color.b;
+        }
+        aiColor3D specular_color(0.0f, 0.0f, 0.0f);
+        if (material->Get(AI_MATKEY_COLOR_SPECULAR, specular_color) == AI_SUCCESS)
+        {
+            m_materials[i].specular_color.r = specular_color.r;
+            m_materials[i].specular_color.g = specular_color.g;
+            m_materials[i].specular_color.b = specular_color.b;
         }
     }
     for (GLuint i = 0; i < node->mNumChildren; i++)
@@ -165,6 +170,9 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
         std::vector<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
+        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        std::vector<Texture> shininessMaps = loadMaterialTextures(material, aiTextureType_SHININESS,
+                                                                  "specular_exponent");
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
         std::vector<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
         textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());

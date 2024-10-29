@@ -34,6 +34,7 @@ void Mesh::draw(const Shader* shader)
     GLuint specularN = 1;
     GLuint normalN = 1;
     GLuint heightN = 1;
+    GLuint specularExponentN = 1;
 
     bool hasDiffuse = false;
     for (const auto& texture : m_textures)
@@ -62,6 +63,8 @@ void Mesh::draw(const Shader* shader)
             number = std::to_string(normalN++);
         else if (name == "texture_height")
             number = std::to_string(heightN++);
+        else if (name == "specular_exponent")
+            number = std::to_string(specularExponentN++);
 
         shader->setInt(name + number, i);
         glBindTexture(GL_TEXTURE_2D, m_textures[i].id);

@@ -21,7 +21,7 @@ public:
     Transform* transform;
     virtual void setShaderRef(const Shader* shader);
     virtual ~Model();
-    const Material& GetMaterial();
+    Material& GetMaterial();
 protected:
     const Shader* m_shader; 
     vector<Mesh> m_meshes;

@@ -3,7 +3,7 @@
 BaseLight::BaseLight()
 {
     m_color = glm::vec3(1.0f, 1.0f, 1.0f);
-    m_ambient_intensity = 0.0f;
+    m_ambient_intensity = 0.1f;
 }
 
 void BaseLight::setShaderRef(const Shader* shader)

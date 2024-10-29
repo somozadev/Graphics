@@ -32,10 +32,12 @@ private:
     float m_last_frame;
 
     bool m_wireframe{false};
+    bool m_cell_shading{false};
+    int m_cell_shading_levels{2};
     bool m_see_grid{true};
 
     DirectionalLight* m_light = NEW(DirectionalLight);
-
+    Model* m_ar47 = NEW(Model, "resources/models/ar/Ar-47.fbx");
 
     GLuint m_FBO{0};
     GLuint m_textureFBO{0};

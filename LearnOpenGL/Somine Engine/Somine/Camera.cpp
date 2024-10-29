@@ -35,6 +35,23 @@ glm::mat4 Camera::getProjectionMatrix()
     return m_projection_matrix;
 }
 
+glm::vec3 Camera::getCameraLocalPosRelativeTo(glm::mat4 w_matrix)
+{
+
+    glm::vec3 translation = glm::vec3(w_matrix[3]);
+    glm::mat4 cam_to_local_translation = glm::translate(glm::mat4(1.0f), -translation);
+
+    glm::mat3 rotation = glm::mat3(w_matrix);
+    glm::mat4 cam_to_local_rotation = glm::mat4(glm::transpose(rotation));
+
+    glm::mat4 cam_to_local_transformation = cam_to_local_translation * cam_to_local_rotation;
+    
+    glm::vec4 cam_world_pos = glm::vec4(m_position, 1.0f);
+    glm::vec4 cam_local_pos = cam_to_local_transformation * cam_world_pos;
+
+    return glm::vec3(cam_local_pos);
+}
+
 void Camera::translate(float delta_time)
 {
     if (glfwGetKey(m_window->getGLFWWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)

@@ -141,6 +141,11 @@ void Shader::setDirectionalLight(const std::string &ambientColorName, glm::vec3 
 }
 void Shader::setMaterial(const std::string &name, Material& value) const
 {
-    glUniform3f(glGetUniformLocation(id, (name+ ".ambient_color").c_str()), value.ambient_color.r,value.ambient_color.g,value.ambient_color.b);
-    glUniform3f(glGetUniformLocation(id, (name+ ".diffuse_color").c_str()), value.diffuse_color.r,value.diffuse_color.g,value.diffuse_color.b);
+    const std::string& ambient = (name+ ".ambient_color");
+    const std::string& diffuse = (name+ ".diffuse_color");
+    const std::string& specular = (name+ ".specular_color");
+
+    glUniform3f(glGetUniformLocation(id, ambient.c_str()), value.ambient_color.r,value.ambient_color.g,value.ambient_color.b);
+    glUniform3f(glGetUniformLocation(id, diffuse.c_str()), value.diffuse_color.r,value.diffuse_color.g,value.diffuse_color.b);
+    glUniform3f(glGetUniformLocation(id, specular.c_str()), value.specular_color.r,value.specular_color.g,value.specular_color.b);
 }

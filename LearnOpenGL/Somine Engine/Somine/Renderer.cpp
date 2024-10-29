@@ -69,24 +69,24 @@ void Renderer::initModels()
     light->transform->scale(0.2, 0.2, 0.2);
     light->setShaderRef(m_shaders["assimp"]);
 
-    m_models.emplace_back(NEW(Terrain, 10, 50, 0.20f, "resources/textures/tough_grass.jpg"));
+    m_models.emplace_back(NEW(Terrain, 20, 60, 0.20f, "resources/textures/tough_grass.jpg"));
     Model* terrain = m_models.back();
     terrain->transform->move(0.0f, -2.0f, 0.0f);
-    terrain->transform->scale(0.5f, 0.5f, 0.5f);
+    terrain->transform->scale(1.0f, 1.0f, 1.0f);
     terrain->transform->rotate(0.0f, 0.0f, 0.0f);
     terrain->setShaderRef(m_shaders["assimp"]);
 
-    m_models.emplace_back(NEW(Model, "resources/models/ar/Ar-47.fbx"));
+    m_models.emplace_back(m_ar47);
     Model* ar47 = m_models.back();
     ar47->transform->move(-8.0f, 0.0f, 0.0f);
-    ar47->transform->scale(0.25f, 0.25f, 0.25f);
+    ar47->transform->scale(0.5f, 0.5f, 0.5f);
     ar47->transform->rotate(-90.0f, 0.0f, 0.0f);
     ar47->setShaderRef(m_shaders["assimp"]);
 
     m_models.emplace_back(NEW(Model, "resources/models/backpack/backpack.obj"));
     Model* backpack = m_models.back();
     backpack->transform->move(0.0f, 0.0f, 0.0f);
-    backpack->transform->scale(1.0f, 1.0f, 1.0f);
+    backpack->transform->scale(0.25f, 0.25f, 0.25f);
     backpack->transform->rotate(0.0f, 0.0f, 0.0f);
     backpack->setShaderRef(m_shaders["assimp"]);
 
@@ -94,7 +94,7 @@ void Renderer::initModels()
     Model* cup = m_models.back();
     cup->transform->move(2.0f, 0.0f, 0.0f);
     cup->transform->scale(1.5f, 1.5f, 1.5f);
-    cup->transform->rotate(270.0f, 0.0f, 0.0f);
+    cup->transform->rotate(0.0f, 0.0f, 0.0f);
     cup->setShaderRef(m_shaders["assimp"]);
 
 
@@ -176,6 +176,7 @@ void Renderer::update()
     {
         m_light->calcLocalDirection(model->transform->getModelMatrix());
         m_light->setShaderRef(m_shaders["assimp"]);
+        m_shaders["assimp"]->setVec3( "camera_local_position", m_camera.getCameraLocalPosRelativeTo(model->transform->getModelMatrix()));
         model->draw();
     }
     drawGrid(projection, view);
@@ -203,8 +204,11 @@ void Renderer::update()
 
 
     ImguiHandler::addCheckBox("wireframe", &m_wireframe);
+    ImguiHandler::addCheckBox("cell shading", &m_cell_shading);
+    ImguiHandler::addInteger("cell shading levels", &m_cell_shading_levels);
     ImguiHandler::addCheckBox("grid", &m_see_grid);
     ImguiHandler::addColorModifier("bg color", m_bg_color);
+    ImguiHandler::addModel("ar-47", m_ar47);
     ImguiHandler::mainLight(m_light);
     ImguiHandler::draw();
 }
@@ -214,6 +218,8 @@ void Renderer::setupMatrices(glm::mat4 projection, glm::mat4 view)
     m_shaders["assimp"]->use();
     m_shaders["assimp"]->setUniformMatrix4fv("view", view);
     m_shaders["assimp"]->setUniformMatrix4fv("projection", projection);
+    m_shaders["assimp"]->setBool("use_cell_shading", m_cell_shading);
+    m_shaders["assimp"]->setInt("cell_shading_levels", m_cell_shading_levels);
     //
     // m_shaders["light"]->use();
     // m_shaders["light"]->setUniformMatrix4fv("view", view);

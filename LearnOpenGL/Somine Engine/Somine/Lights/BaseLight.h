@@ -10,5 +10,5 @@ public:
     BaseLight();
     void setShaderRef(const Shader* shader) override;
     glm::vec3 m_color;
-    float m_ambient_intensity {0.1f};
+    float m_ambient_intensity {1.0f};
 };

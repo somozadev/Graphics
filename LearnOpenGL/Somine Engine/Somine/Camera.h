@@ -51,7 +51,7 @@ public:
     Camera(Window* window);
     glm::mat4 getViewMatrix();
     glm::mat4 getProjectionMatrix();
-
+    glm::vec3 getCameraLocalPosRelativeTo(glm::mat4 w_matrix);
     ~Camera();
     void update(float delta_time);
 };
