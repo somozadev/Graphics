@@ -31,10 +31,6 @@ void Renderer::initShadersMap()
     m_shaders.insert({
         "default", NEW(Shader, "resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl")
     });
-    // m_shaders.insert({
-    //     "light", NEW(Shader, "resources/shaders/lightSource/vertex_shader.glsl",
-    //                  "resources/shaders/lightSource/fragment_shader.glsl")
-    // });
     m_shaders.insert({
         "grid",NEW(Shader, "resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")
     });
@@ -69,6 +65,17 @@ void Renderer::initModels()
     light->transform->scale(0.2, 0.2, 0.2);
     light->setShaderRef(m_shaders["assimp"]);
 
+    for (int i = 0; i < 1; ++i)
+    {
+        PointLight* p_light = NEW(PointLight, i);
+        m_point_lights.emplace_back(p_light);
+    
+        m_models.emplace_back(p_light);
+        Model* pm_light = m_models.back();
+        pm_light->transform->move(1 + i, 1.0, 0.0);
+        pm_light->setShaderRef(m_shaders["assimp"]);
+    }
+    
     m_models.emplace_back(NEW(Terrain, 20, 60, 0.20f, "resources/textures/tough_grass.jpg"));
     Model* terrain = m_models.back();
     terrain->transform->move(0.0f, -2.0f, 0.0f);
@@ -96,7 +103,6 @@ void Renderer::initModels()
     cup->transform->scale(1.5f, 1.5f, 1.5f);
     cup->transform->rotate(0.0f, 0.0f, 0.0f);
     cup->setShaderRef(m_shaders["assimp"]);
-
 
 
     //quad-mesh 
@@ -176,7 +182,12 @@ void Renderer::update()
     {
         m_light->calcLocalDirection(model->transform->getModelMatrix());
         m_light->setShaderRef(m_shaders["assimp"]);
-        m_shaders["assimp"]->setVec3( "camera_local_position", m_camera.getCameraLocalPosRelativeTo(model->transform->getModelMatrix()));
+        m_shaders["assimp"]->setVec3("camera_local_position", m_camera.getCameraLocalPosRelativeTo(model->transform->getModelMatrix()));
+         for (const auto point_light : m_point_lights)
+        {
+            point_light->calcLocalPosition(model->transform->getModelMatrix());
+            point_light->setShaderData();
+        }
         model->draw();
     }
     drawGrid(projection, view);
@@ -210,21 +221,19 @@ void Renderer::update()
     ImguiHandler::addColorModifier("bg color", m_bg_color);
     ImguiHandler::addModel("ar-47", m_ar47);
     ImguiHandler::mainLight(m_light);
+    ImguiHandler::addPointLights(m_point_lights);
     ImguiHandler::draw();
 }
 
 void Renderer::setupMatrices(glm::mat4 projection, glm::mat4 view)
 {
     m_shaders["assimp"]->use();
+    m_shaders["assimp"]->setInt("n_point_lights",1);
     m_shaders["assimp"]->setUniformMatrix4fv("view", view);
     m_shaders["assimp"]->setUniformMatrix4fv("projection", projection);
+    
     m_shaders["assimp"]->setBool("use_cell_shading", m_cell_shading);
     m_shaders["assimp"]->setInt("cell_shading_levels", m_cell_shading_levels);
-    //
-    // m_shaders["light"]->use();
-    // m_shaders["light"]->setUniformMatrix4fv("view", view);
-    // m_shaders["light"]->setUniformMatrix4fv("projection", projection);
-    
 }
 
 void Renderer::calcDeltaTime()

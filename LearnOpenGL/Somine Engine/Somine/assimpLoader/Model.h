@@ -9,21 +9,21 @@ using namespace std;
 #include "../Shader.h"
 
 
-
 class Model
 {
 public:
-    Model(std::string const &path);
+    Model(std::string const& path);
     Model();
-    void draw(const Shader* shader);
-    void draw();
+    virtual void draw(const Shader* shader);
+    virtual void draw();
     void addMesh(const Mesh& mesh);
     Transform* transform;
     virtual void setShaderRef(const Shader* shader);
     virtual ~Model();
     Material& GetMaterial();
+
 protected:
-    const Shader* m_shader; 
+    const Shader* m_shader;
     vector<Mesh> m_meshes;
     std::vector<Material> m_materials;
     unsigned int textureFromFile(const char* c_str, const string& string);

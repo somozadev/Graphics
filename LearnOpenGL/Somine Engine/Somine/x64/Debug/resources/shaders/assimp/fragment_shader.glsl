@@ -22,7 +22,7 @@ struct DirectionalLight
 struct PointLight
 {
     BaseLight base; 
-    vec3 local_poition; 
+    vec3 local_position; 
     float constant_attenuation; 
     float linear_attenuation; 
     float exponential_attenuation; 
@@ -98,7 +98,7 @@ vec4 CalcDirectionalLight(vec3 normal)
 }
 vec4 CalcPointLight(int i, vec3 normal)
 {
-    vec3 light_direction = point_lights[i].local_poition - position;   
+    vec3 light_direction =  position - point_lights[i].local_position;   
     float distance = length(light_direction);
     light_direction = normalize(light_direction); 
     

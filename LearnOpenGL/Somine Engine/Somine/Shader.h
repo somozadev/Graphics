@@ -25,5 +25,6 @@ public:
     void setVec3(const std::string &name, glm::vec3 value) const;
     void setLight(const std::string &colorName, glm::vec3 colorValue,const std::string &ambientName, float ambientValue ) const;
     void setDirectionalLight(const std::string &ambientColorName, glm::vec3 ambientColorValue,const std::string &ambientName, float ambientValue,const std::string &diffuseName, float diffuseValue,const std::string &directionName, glm::vec3 directionValue ) const;
+    void setPointLight(int index, glm::vec3 color, float ambient_intensity, float diffuse_intensity, glm::vec3 local_pos, float constant_att, float linear_att, float exponential_att) const;
     void setMaterial(const std::string &name, Material& value) const;
 };  

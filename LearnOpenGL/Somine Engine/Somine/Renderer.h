@@ -12,6 +12,7 @@
 #include "assimpLoader/Model.h"
 #include "Lights/BaseLight.h"
 #include "Lights/DirectionalLight.h"
+#include "Lights/PointLight.h"
 #include "primitives/CubePrimitive.h"
 #include "primitives/PlanePrimitive.h"
 #include "primitives/PyramidPrimitive.h"
@@ -37,6 +38,7 @@ private:
     bool m_see_grid{true};
 
     DirectionalLight* m_light = NEW(DirectionalLight);
+    std::vector<PointLight*> m_point_lights; 
     Model* m_ar47 = NEW(Model, "resources/models/ar/Ar-47.fbx");
 
     GLuint m_FBO{0};

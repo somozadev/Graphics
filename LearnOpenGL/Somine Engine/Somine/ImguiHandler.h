@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "assimpLoader/Model.h"
 #include "Lights/DirectionalLight.h"
+#include "Lights/PointLight.h"
 
 class ImguiHandler
 {
@@ -14,6 +15,7 @@ public:
     static void addSingleModel(const char* text, Transform* transform);
     static void addInteger(const char* text, int* reference);
     static void addModel(const char* modelName, Model* model);
+    static void addPointLights(std::vector<PointLight*> lights);
     static void mainLight(DirectionalLight* light);
     static void draw();
     static void endWindow();

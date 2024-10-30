@@ -5,7 +5,6 @@ class DirectionalLight : public  BaseLight
 {
 public:
     DirectionalLight();
-    float m_diffuse_intensity{1.0f};
     void setShaderRef(const Shader* shader) override;
 
     void calcLocalDirection(const glm::mat4 &world);

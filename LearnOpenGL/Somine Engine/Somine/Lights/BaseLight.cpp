@@ -6,6 +6,16 @@ BaseLight::BaseLight()
     m_ambient_intensity = 0.1f;
 }
 
+void BaseLight::draw()
+{
+    return;
+}
+
+void BaseLight::draw(const Shader* shader)
+{
+    return;
+}
+
 void BaseLight::setShaderRef(const Shader* shader)
 {
     m_shader = shader;

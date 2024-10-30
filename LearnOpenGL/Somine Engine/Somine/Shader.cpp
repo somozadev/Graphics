@@ -12,6 +12,7 @@
 #include <glm/glm/gtc/type_ptr.inl>
 
 #include "assimpLoader/Material.h"
+#include "Lights/PointLight.h"
 
 
 Shader::Shader()
@@ -135,9 +136,21 @@ void Shader::setDirectionalLight(const std::string &ambientColorName, glm::vec3 
     glUniform1f(glGetUniformLocation(id, diffuseName.c_str()), diffuseValue);
     //should use local direction here 
     glUniform3f(glGetUniformLocation(id, directionName.c_str()), directionValue.x, directionValue.y, directionValue.z);
-
-
+}
+void Shader::setPointLight(int index, glm::vec3 color, float ambient_intensity, float diffuse_intensity, glm::vec3 local_pos, float constant_att, float linear_att, float exponential_att) const
+{
     
+    std::string uniformName = "point_lights[" + std::to_string(index) + "].";
+    glUniform3f(glGetUniformLocation(id, (uniformName+"base.color").c_str()), color.r,color.g,color.b);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"base.ambient_intensity").c_str()), ambient_intensity);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"base.diffuse_intensity").c_str()), diffuse_intensity);
+
+    glUniform3f(glGetUniformLocation(id, (uniformName+"local_position").c_str()), local_pos.x,local_pos.y,local_pos.z);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"constant_attenuation").c_str()), constant_att);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"linear_attenuation").c_str()), linear_att);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"exponential_attenuation").c_str()), exponential_att);
+
+
 }
 void Shader::setMaterial(const std::string &name, Material& value) const
 {

@@ -3,6 +3,7 @@
 #include "IMGUI/imgui_impl_glfw.h"
 #include "IMGUI/imgui_impl_opengl3.h"
 #include "Lights/DirectionalLight.h"
+#include "Lights/PointLight.h"
 
 void ImguiHandler::newFrame()
 {
@@ -53,6 +54,40 @@ void ImguiHandler::addModel(const char* modelName, Model* model)
     model->transform->rotate(tempR[0], tempR[1], tempR[2]);
     ImGui::SliderFloat3("scale", tempS, -360.0f, 360.0f);
     model->transform->scale(tempS[0], tempS[1], tempS[2]);
+    ImGui::EndGroup();
+}
+
+void ImguiHandler::addPointLights(std::vector<PointLight*> lights)
+{
+    ImGui::BeginGroup();
+    ImGui::Text("Point lights");
+
+    int index = 0;
+    for (const auto& light : lights)
+    {
+        if (light == nullptr || light->transform == nullptr) continue;
+
+        // Posición de la luz
+        std::string label = "Position##" + std::to_string(index);
+        float temp[3] = {light->transform->position.x, light->transform->position.y, light->transform->position.z};
+        if (ImGui::SliderFloat3(label.c_str(), temp, -20.0f, 20.0f)) {
+            light->transform->move(temp[0], temp[1], temp[2]);
+        }
+        label = "Ambient##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_ambient_intensity, 0.0f, 1.0f);
+        label = "Diffuse Intensity##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_diffuse_intensity, 0.0f, 1.0f);
+        label = "Color##" + std::to_string(index);
+        ImGui::ColorEdit3(label.c_str(), &light->m_color[0]);
+        label = "Constant Attenuation##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_constant_attenuation, 0.0f, 10.0f);
+        label = "Linear Attenuation##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_linear_attenuation, 0.0f, 10.0f);
+        label = "Exponential Attenuation##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_exponential_attenuation, 0.0f, 10.0f);
+
+        index++;
+    }
     ImGui::EndGroup();
 }
 

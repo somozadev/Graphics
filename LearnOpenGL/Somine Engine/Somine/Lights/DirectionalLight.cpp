@@ -1,5 +1,11 @@
 ﻿#include "DirectionalLight.h"
 
+DirectionalLight::DirectionalLight(): BaseLight()
+{
+    m_diffuse_intensity = 1.0f;
+    transform->rotation = {-225.0, -180.0, 168.0};
+}
+
 void DirectionalLight::calcLocalDirection(const glm::mat4& world)
 {
     glm::mat3 rotation_scale(world);
@@ -12,12 +18,6 @@ void DirectionalLight::calcLocalDirection(const glm::mat4& world)
 
     m_local_direction = world_to_local * transform->rotation;
     m_local_direction = glm::normalize(m_local_direction);
-}
-
-DirectionalLight::DirectionalLight() : BaseLight()
-{
-    m_diffuse_intensity = 1.0f;
-    transform->rotation = {-225.0, -180.0, 168.0};
 }
 
 void DirectionalLight::setShaderRef(const Shader* shader)
