@@ -79,11 +79,20 @@ void ImguiHandler::addPointLights(std::vector<PointLight*> lights)
         ImGui::SliderFloat(label.c_str(), &light->m_diffuse_intensity, 0.0f, 1.0f);
         label = "Color##" + std::to_string(index);
         ImGui::ColorEdit3(label.c_str(), &light->m_color[0]);
+        
+        label = "Radius##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_radius, 1.0f, 100.0f);
+       
         label = "Constant Attenuation##" + std::to_string(index);
+       
         ImGui::SliderFloat(label.c_str(), &light->m_constant_attenuation, 0.0f, 10.0f);
+       
         label = "Linear Attenuation##" + std::to_string(index);
+       
         ImGui::SliderFloat(label.c_str(), &light->m_linear_attenuation, 0.0f, 10.0f);
+       
         label = "Exponential Attenuation##" + std::to_string(index);
+       
         ImGui::SliderFloat(label.c_str(), &light->m_exponential_attenuation, 0.0f, 10.0f);
 
         index++;

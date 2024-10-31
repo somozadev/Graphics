@@ -48,6 +48,7 @@ uniform sampler2D texture_specular1;
 uniform sampler2D specular_exponent1; 
 
 uniform bool use_cell_shading = false; 
+uniform bool use_greyscale_shading = false; 
 uniform int cell_shading_levels = 2; 
 
 
@@ -58,6 +59,7 @@ float Quantize(float value, int levels)
 
 vec4 CalcLightInternally(BaseLight base, vec3 direction, vec3 normal)
 {
+    
     vec4 ambient_color = vec4(base.color, 1.0) * base.ambient_intensity * vec4(material.ambient_color, 1.0) ;
     float diffuse_factor = dot(normal, -direction); 
     vec4 diffuse_color = vec4 (0, 0, 0, 0); 
@@ -78,17 +80,18 @@ vec4 CalcLightInternally(BaseLight base, vec3 direction, vec3 normal)
         {
             diffuse_color = vec4(base.color,1.0) * base.diffuse_intensity * vec4(material.diffuse_color,1.0) * diffuse_factor;
             vec3 pixel_to_camera = normalize(camera_local_position - position); 
-            vec3 light_reflect = normalize(reflect(direction, normal));
-            float specular_factor = dot(pixel_to_camera, light_reflect); 
+            vec3 light_reflect = normalize(reflect(-direction, normal));
+            float specular_factor = dot(pixel_to_camera, light_reflect); //
+            //pow(max(dot(pixel_to_camera, light_reflect), 0.0), material.shininess) to add shininesss to materials
             if(specular_factor > 0)
             {
                 float specular_exponent = texture(specular_exponent1, tex_coords).r * 255.0; 
                 specular_factor = pow(specular_factor, specular_exponent); 
                 specular_color = vec4(base.color, 1.0) * base.diffuse_intensity * vec4(material.specular_color, 1.0) * specular_factor; 
             } 
-        
+        //  vec3 emission = texture(material.emission_color, tex_coords).rgb;
         }     
-        return(ambient_color + diffuse_color + specular_color); 
+        return(ambient_color + diffuse_color + specular_color); //+emission
     }     
 }
 
@@ -116,7 +119,11 @@ void main()
     {
         total_lightning += CalcPointLight(i, norm_normal);
     }
-    vec3 color = texture(texture_diffuse1, tex_coords).rgb * total_lightning.rgb;
+    vec3 color;
+    if(use_greyscale_shading)
+        color = vec3(1.0,1.0,1.0) * total_lightning.rgb;
+    else
+        color = texture(texture_diffuse1, tex_coords).rgb * total_lightning.rgb;
     fragment_color = vec4(color, 1.0);
 
 }

@@ -34,6 +34,7 @@ private:
 
     bool m_wireframe{false};
     bool m_cell_shading{false};
+    bool m_greyscale_shading{false};
     int m_cell_shading_levels{2};
     bool m_see_grid{true};
 

@@ -215,11 +215,12 @@ void Renderer::update()
 
 
     ImguiHandler::addCheckBox("wireframe", &m_wireframe);
+    ImguiHandler::addCheckBox("grayscale shading", &m_greyscale_shading);
     ImguiHandler::addCheckBox("cell shading", &m_cell_shading);
     ImguiHandler::addInteger("cell shading levels", &m_cell_shading_levels);
     ImguiHandler::addCheckBox("grid", &m_see_grid);
     ImguiHandler::addColorModifier("bg color", m_bg_color);
-    ImguiHandler::addModel("ar-47", m_ar47);
+    // ImguiHandler::addModel("ar-47", m_ar47);
     ImguiHandler::mainLight(m_light);
     ImguiHandler::addPointLights(m_point_lights);
     ImguiHandler::draw();
@@ -233,6 +234,7 @@ void Renderer::setupMatrices(glm::mat4 projection, glm::mat4 view)
     m_shaders["assimp"]->setUniformMatrix4fv("projection", projection);
     
     m_shaders["assimp"]->setBool("use_cell_shading", m_cell_shading);
+    m_shaders["assimp"]->setBool("use_greyscale_shading", m_greyscale_shading);
     m_shaders["assimp"]->setInt("cell_shading_levels", m_cell_shading_levels);
 }
 
