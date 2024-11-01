@@ -73,12 +73,12 @@ void Renderer::init()
 
 void Renderer::initModels()
 {
-    m_models.emplace_back(NEW(Terrain, 20, 60, 0.20f, "resources/textures/tough_grass.jpg"));
-    Model* terrain = m_models.back();
-    terrain->transform->move(0.0f, -2.0f, 0.0f);
-    terrain->transform->scale(1.0f, 1.0f, 1.0f);
-    terrain->transform->rotate(0.0f, 0.0f, 0.0f);
-
+   m_models.emplace_back(NEW(Terrain, 20, 60, 0.20f, "resources/textures/tough_grass.jpg"));
+   Model* terrain = m_models.back();
+   terrain->transform->move(0.0f, -2.0f, 0.0f);
+   terrain->transform->scale(1.0f, 1.0f, 1.0f);
+   terrain->transform->rotate(0.0f, 0.0f, 0.0f);
+   
     m_models.emplace_back(m_ar47);
     Model* ar47 = m_models.back();
     ar47->transform->move(-8.0f, 0.0f, 0.0f);
@@ -241,8 +241,8 @@ void Renderer::lightPass()
     m_shaders["light_pass"]->use();
     for (auto& model : m_models)
     {
-        model->setShaderRef(m_shaders["light_pass"]);
 
+        model->setShaderRef(m_shaders["light_pass"]);
 
         m_light->calcLocalDirection(model->transform->getModelMatrix());
         m_light->setShaderRef(m_shaders["light_pass"]);
@@ -285,24 +285,7 @@ void Renderer::update()
     setupMatrices(projection, view);
 
 
-    // for (auto model : m_models)
-    // {
-    //     m_light->calcLocalDirection(model->transform->getModelMatrix());
-    //     m_light->setShaderRef(m_shaders["assimp"]);
-    //     m_shaders["assimp"]->setVec3("camera_local_position", m_camera.getCameraLocalPosRelativeTo(model->transform->getModelMatrix()));
-    //     for (const auto point_light : m_point_lights)
-    //     {
-    //         point_light->calcLocalPosition(model->transform->getModelMatrix());
-    //         point_light->setShaderData();
-    //     }
-    //
-    //     for (const auto spot_light : m_spot_lights)
-    //     {
-    //         spot_light->calcLocalDirectionAndPosition(model->transform->getModelMatrix());
-    //         spot_light->setShaderData();
-    //     }
-    //     model->draw();
-    // }
+
 
     depthPass();
     stencilPass();
@@ -314,7 +297,7 @@ void Renderer::update()
     glViewport(0, 0, m_window->m_width, m_window->m_height);
 
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 
     //use shader corresponding the fbo technicque (4.ex. fxaa)
 

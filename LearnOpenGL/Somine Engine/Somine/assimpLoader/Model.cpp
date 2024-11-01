@@ -27,11 +27,13 @@ Material& Model::GetMaterial() //placeholder
 {
     for (auto& m_material : m_materials)
     {
-        if (m_material.ambient_color != glm::vec3(0.0f, 0.0f, 0.0f))
+        if (m_material.ambient_color != glm::vec3(0.0f, 0.0f, 0.0f) &&
+            m_material.diffuse_color != glm::vec3(0.0f, 0.0f, 0.0f))
             return m_material;
     }
     Material new_mat = Material();
     new_mat.ambient_color = glm::vec3(1.0f, 1.0f, 1.0f);
+    new_mat.diffuse_color = glm::vec3(1.0f, 1.0f, 1.0f);
     m_materials.push_back(new_mat);
     return new_mat;
 }
@@ -97,7 +99,7 @@ void Model::processNode(aiNode* node, const aiScene* scene)
             m_materials[i].ambient_color.b = ambient_color.b;
         }
         aiColor3D diffuse_color(0.0f, 0.0f, 0.0f);
-        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, ambient_color) == AI_SUCCESS)
+        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color) == AI_SUCCESS)
         {
             m_materials[i].diffuse_color.r = diffuse_color.r;
             m_materials[i].diffuse_color.g = diffuse_color.g;
