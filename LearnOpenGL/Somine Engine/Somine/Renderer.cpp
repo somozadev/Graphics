@@ -73,12 +73,12 @@ void Renderer::init()
 
 void Renderer::initModels()
 {
-   m_models.emplace_back(NEW(Terrain, 20, 60, 0.20f, "resources/textures/tough_grass.jpg"));
-   Model* terrain = m_models.back();
-   terrain->transform->move(0.0f, -2.0f, 0.0f);
-   terrain->transform->scale(1.0f, 1.0f, 1.0f);
-   terrain->transform->rotate(0.0f, 0.0f, 0.0f);
-   
+    m_models.emplace_back(NEW(Terrain, 20, 60, 0.20f, "resources/textures/tough_grass.jpg"));
+    Model* terrain = m_models.back();
+    terrain->transform->move(0.0f, -2.0f, 0.0f);
+    terrain->transform->scale(1.0f, 1.0f, 1.0f);
+    terrain->transform->rotate(0.0f, 0.0f, 0.0f);
+
     m_models.emplace_back(m_ar47);
     Model* ar47 = m_models.back();
     ar47->transform->move(-8.0f, 0.0f, 0.0f);
@@ -97,7 +97,7 @@ void Renderer::initModels()
     cup->transform->scale(1.5f, 1.5f, 1.5f);
     cup->transform->rotate(0.0f, 0.0f, 0.0f);
 
-    
+
     m_models.emplace_back(m_light);
     Model* light = m_models.back();
     light->transform->move(0.0, 2.0, 5.0);
@@ -122,8 +122,6 @@ void Renderer::initModels()
         Model* sm_light = m_models.back();
         sm_light->transform->move(1.0 + i, 2.0, 0.0);
     }
-
-  
 }
 
 
@@ -190,6 +188,7 @@ void Renderer::depthPass()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
     glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
     glClear(GL_DEPTH_BUFFER_BIT);
     glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
     m_shaders["depth_pass"]->use();
@@ -199,6 +198,7 @@ void Renderer::depthPass()
         model->draw(m_shaders["depth_pass"]);
     }
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::stencilPass()
@@ -208,6 +208,7 @@ void Renderer::stencilPass()
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); //write control over stencil
     glStencilFunc(GL_ALWAYS, 1, 0xFF); //write a ref value 1
     glStencilMask(0xFF); //activate writing in stencil buffer
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
     m_shaders["stencil_pass"]->use();
     for (auto& model : m_models)
@@ -215,33 +216,41 @@ void Renderer::stencilPass()
         model->setShaderRef(m_shaders["stencil_pass"]);
         model->draw(m_shaders["stencil_pass"]);
     }
-
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glStencilMask(0x00); //block stencil writing for next passes
     glDisable(GL_STENCIL_TEST);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::colorPass()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_shaders["color_pass"]->use();
     for (auto& model : m_models)
     {
+        /*if (model->isTransparent())
+        {
+            glEnable(GL_BLEND);  // Activate for transparent objects
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }*/
         model->setShaderRef(m_shaders["color_pass"]);
         model->draw(m_shaders["color_pass"]);
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::lightPass()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //| GL_DEPTH_BUFFER_BIT
     m_shaders["light_pass"]->use();
     for (auto& model : m_models)
     {
-
         model->setShaderRef(m_shaders["light_pass"]);
 
         m_light->calcLocalDirection(model->transform->getModelMatrix());
@@ -264,6 +273,7 @@ void Renderer::lightPass()
         }
         model->draw(m_shaders["light_pass"]);
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::update()
@@ -271,10 +281,8 @@ void Renderer::update()
     calcDeltaTime();
     ImguiHandler::startWindow("settings");
 
-    // glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
-    // glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
 
+    glEnable(GL_CULL_FACE);
     glPolygonMode(GL_FRONT_AND_BACK, m_wireframe ? GL_LINE : GL_FILL);
 
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
@@ -285,30 +293,21 @@ void Renderer::update()
     setupMatrices(projection, view);
 
 
-
-
     depthPass();
     stencilPass();
     colorPass();
     lightPass();
     drawGrid(projection, view);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0); //draw to the screen
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, m_window->m_width, m_window->m_height);
-
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
-    glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
-
-    //use shader corresponding the fbo technicque (4.ex. fxaa)
-
-
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_shaders["fbo"]->use();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_textureFBO);
     m_shaders["fbo"]->setInt("source_texture", 0);
 
-
-    // glDisable(GL_DEPTH_TEST);
     glBindVertexArray(m_quadMeshVAO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
@@ -321,7 +320,6 @@ void Renderer::update()
     ImguiHandler::addInteger("cell shading levels", &m_cell_shading_levels);
     ImguiHandler::addCheckBox("grid", &m_see_grid);
     ImguiHandler::addColorModifier("bg color", m_bg_color);
-    // ImguiHandler::addModel("ar-47", m_ar47);
     ImguiHandler::mainLight(m_light);
     ImguiHandler::addPointLights(m_point_lights);
     ImguiHandler::addSpotLights(m_spot_lights);
@@ -364,12 +362,14 @@ void Renderer::calcDeltaTime()
 void Renderer::drawGrid(glm::mat4 projection, glm::mat4 view)
 {
     if (!m_see_grid) return;
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
     glBindVertexArray(m_grid.m_VAO);
     glm::mat4 mvp = projection * view * m_grid.getModelMatrix();
     m_shaders["grid"]->use();
     m_shaders["grid"]->setUniformMatrix4fv("mvp", mvp);
     glDrawArrays(GL_LINES, 0, m_grid.getVertices().size() / 3);
     glBindVertexArray(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
