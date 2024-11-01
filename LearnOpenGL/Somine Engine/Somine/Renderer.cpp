@@ -316,6 +316,7 @@ void Renderer::update()
 
     ImguiHandler::addCheckBox("wireframe", &m_wireframe);
     ImguiHandler::addCheckBox("grayscale shading", &m_greyscale_shading);
+    ImguiHandler::addCheckBox("dark n white shading", &m_dnw_shading);
     ImguiHandler::addCheckBox("cell shading", &m_cell_shading);
     ImguiHandler::addInteger("cell shading levels", &m_cell_shading_levels);
     ImguiHandler::addCheckBox("grid", &m_see_grid);
@@ -336,6 +337,7 @@ void Renderer::setupMatrices(glm::mat4 projection, glm::mat4 view)
     m_shaders["light_pass"]->setUniformMatrix4fv("projection", projection);
     m_shaders["light_pass"]->setBool("use_cell_shading", m_cell_shading);
     m_shaders["light_pass"]->setBool("use_greyscale_shading", m_greyscale_shading);
+    m_shaders["light_pass"]->setBool("use_dnw_shading", m_dnw_shading);
     m_shaders["light_pass"]->setInt("cell_shading_levels", m_cell_shading_levels);
 
     m_shaders["depth_pass"]->use();

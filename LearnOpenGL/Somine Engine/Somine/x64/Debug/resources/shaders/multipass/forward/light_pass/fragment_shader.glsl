@@ -58,6 +58,7 @@ uniform sampler2D specular_exponent1;
 
 uniform bool use_cell_shading = false; 
 uniform bool use_greyscale_shading = false; 
+uniform bool use_dnw_shading = false;
 uniform int cell_shading_levels = 2; 
 
 
@@ -148,7 +149,14 @@ void main()
     }
     vec3 color;
     if(use_greyscale_shading)
-        color = vec3(1.0,1.0,1.0) * total_lightning.rgb;
+    {
+        color = total_lightning.rgb;
+    }
+    else if(use_dnw_shading)
+    {
+        vec3 clamped_lightning = step(0.5, total_lightning.rgb);
+        color = clamped_lightning;
+    }
     else
         color = texture(texture_diffuse1, tex_coords).rgb * total_lightning.rgb;
     fragment_color = vec4(color, 1.0);
