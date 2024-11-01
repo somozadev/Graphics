@@ -7,6 +7,7 @@ PointLight::PointLight(int index): BaseLight()
     m_index = index; 
     m_diffuse_intensity = 1.0f;
     transform->scale(0.05f,0.05f,0.05f);
+    
 }
 
 void PointLight::calcLocalPosition(const glm::mat4& model)

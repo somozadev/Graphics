@@ -4,6 +4,7 @@
 #include "IMGUI/imgui_impl_opengl3.h"
 #include "Lights/DirectionalLight.h"
 #include "Lights/PointLight.h"
+#include "Lights/SpotLight.h"
 
 void ImguiHandler::newFrame()
 {
@@ -68,30 +69,80 @@ void ImguiHandler::addPointLights(std::vector<PointLight*> lights)
         if (light == nullptr || light->transform == nullptr) continue;
 
         // Posición de la luz
-        std::string label = "Position##" + std::to_string(index);
+        std::string label = "PointLight_Position##" + std::to_string(index);
         float temp[3] = {light->transform->position.x, light->transform->position.y, light->transform->position.z};
         if (ImGui::SliderFloat3(label.c_str(), temp, -20.0f, 20.0f)) {
             light->transform->move(temp[0], temp[1], temp[2]);
         }
-        label = "Ambient##" + std::to_string(index);
+        label = "PointLight_Ambient##" + std::to_string(index);
         ImGui::SliderFloat(label.c_str(), &light->m_ambient_intensity, 0.0f, 1.0f);
-        label = "Diffuse Intensity##" + std::to_string(index);
+        label = "PointLight_Diffuse Intensity##" + std::to_string(index);
         ImGui::SliderFloat(label.c_str(), &light->m_diffuse_intensity, 0.0f, 1.0f);
-        label = "Color##" + std::to_string(index);
+        label = "PointLight_Color##" + std::to_string(index);
         ImGui::ColorEdit3(label.c_str(), &light->m_color[0]);
         
-        label = "Radius##" + std::to_string(index);
+        label = "PointLight_Radius##" + std::to_string(index);
         ImGui::SliderFloat(label.c_str(), &light->m_radius, 1.0f, 100.0f);
        
-        label = "Constant Attenuation##" + std::to_string(index);
+        label = "PointLight_Constant Attenuation##" + std::to_string(index);
        
         ImGui::SliderFloat(label.c_str(), &light->m_constant_attenuation, 0.0f, 10.0f);
        
-        label = "Linear Attenuation##" + std::to_string(index);
+        label = "PointLight_Linear Attenuation##" + std::to_string(index);
        
         ImGui::SliderFloat(label.c_str(), &light->m_linear_attenuation, 0.0f, 10.0f);
        
-        label = "Exponential Attenuation##" + std::to_string(index);
+        label = "PointLight_Exponential Attenuation##" + std::to_string(index);
+       
+        ImGui::SliderFloat(label.c_str(), &light->m_exponential_attenuation, 0.0f, 10.0f);
+
+        index++;
+    }
+    ImGui::EndGroup();
+}
+void ImguiHandler::addSpotLights(std::vector<SpotLight*> lights)
+{
+    ImGui::BeginGroup();
+    ImGui::Text("Spot lights");
+
+    int index = 0;
+    for (const auto& light : lights)
+    {
+        if (light == nullptr || light->transform == nullptr) continue;
+
+        // Posición de la luz
+        std::string label = "SpotLight_Position##" + std::to_string(index);
+        float temp[3] = {light->transform->position.x, light->transform->position.y, light->transform->position.z};
+        if (ImGui::SliderFloat3(label.c_str(), temp, -20.0f, 20.0f)) {
+            light->transform->move(temp[0], temp[1], temp[2]);
+        }
+        label = "SpotLight_Direction##" + std::to_string(index);
+        float tempD[3] = {light->transform->rotation.x, light->transform->rotation.y, light->transform->rotation.z};
+        if (ImGui::SliderFloat3(label.c_str(), tempD, -360.0f, 360.0f)) {
+            light->transform->rotate(tempD[0], tempD[1], tempD[2]);
+        }
+        label = "SpotLight_Ambient##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_ambient_intensity, 0.0f, 1.0f);
+        label = "SpotLight_Diffuse Intensity##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_diffuse_intensity, 0.0f, 1.0f);
+        label = "SpotLight_Color##" + std::to_string(index);
+        ImGui::ColorEdit3(label.c_str(), &light->m_color[0]);
+        
+        label = "SpotLight_Cutoff##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_cutoff, 0.0f, 90.0f);
+
+        label = "SpotLight_Radius##" + std::to_string(index);
+        ImGui::SliderFloat(label.c_str(), &light->m_radius, 1.0f, 100.0f);
+       
+        label = "SpotLight_Constant Attenuation##" + std::to_string(index);
+       
+        ImGui::SliderFloat(label.c_str(), &light->m_constant_attenuation, 0.0f, 10.0f);
+       
+        label = "SpotLight_Linear Attenuation##" + std::to_string(index);
+       
+        ImGui::SliderFloat(label.c_str(), &light->m_linear_attenuation, 0.0f, 10.0f);
+       
+        label = "SpotLight_Exponential Attenuation##" + std::to_string(index);
        
         ImGui::SliderFloat(label.c_str(), &light->m_exponential_attenuation, 0.0f, 10.0f);
 

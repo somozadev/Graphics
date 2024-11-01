@@ -13,6 +13,7 @@
 #include "Lights/BaseLight.h"
 #include "Lights/DirectionalLight.h"
 #include "Lights/PointLight.h"
+#include "Lights/SpotLight.h"
 #include "primitives/CubePrimitive.h"
 #include "primitives/PlanePrimitive.h"
 #include "primitives/PyramidPrimitive.h"
@@ -40,6 +41,7 @@ private:
 
     DirectionalLight* m_light = NEW(DirectionalLight);
     std::vector<PointLight*> m_point_lights; 
+    std::vector<SpotLight*> m_spot_lights; 
     Model* m_ar47 = NEW(Model, "resources/models/ar/Ar-47.fbx");
 
     GLuint m_FBO{0};

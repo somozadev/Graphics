@@ -76,6 +76,17 @@ void Renderer::initModels()
         pm_light->setShaderRef(m_shaders["assimp"]);
     }
     
+    for (int i = 0; i < 1; ++i)
+    {
+        SpotLight* s_light = NEW(SpotLight, i);
+        m_spot_lights.emplace_back(s_light);
+    
+        m_models.emplace_back(s_light);
+        Model* sm_light = m_models.back();
+        sm_light->transform->move(1.0 + i, 2.0, 0.0);
+        sm_light->setShaderRef(m_shaders["assimp"]);
+    }
+    
     m_models.emplace_back(NEW(Terrain, 20, 60, 0.20f, "resources/textures/tough_grass.jpg"));
     Model* terrain = m_models.back();
     terrain->transform->move(0.0f, -2.0f, 0.0f);
@@ -183,10 +194,16 @@ void Renderer::update()
         m_light->calcLocalDirection(model->transform->getModelMatrix());
         m_light->setShaderRef(m_shaders["assimp"]);
         m_shaders["assimp"]->setVec3("camera_local_position", m_camera.getCameraLocalPosRelativeTo(model->transform->getModelMatrix()));
-         for (const auto point_light : m_point_lights)
+        for (const auto point_light : m_point_lights)
         {
             point_light->calcLocalPosition(model->transform->getModelMatrix());
             point_light->setShaderData();
+        }
+
+        for (const auto spot_light : m_spot_lights)
+        {
+            spot_light->calcLocalDirectionAndPosition(model->transform->getModelMatrix());
+            spot_light->setShaderData();
         }
         model->draw();
     }
@@ -223,6 +240,7 @@ void Renderer::update()
     // ImguiHandler::addModel("ar-47", m_ar47);
     ImguiHandler::mainLight(m_light);
     ImguiHandler::addPointLights(m_point_lights);
+    ImguiHandler::addSpotLights(m_spot_lights);
     ImguiHandler::draw();
 }
 
@@ -230,6 +248,7 @@ void Renderer::setupMatrices(glm::mat4 projection, glm::mat4 view)
 {
     m_shaders["assimp"]->use();
     m_shaders["assimp"]->setInt("n_point_lights",1);
+    m_shaders["assimp"]->setInt("n_spot_lights",1);
     m_shaders["assimp"]->setUniformMatrix4fv("view", view);
     m_shaders["assimp"]->setUniformMatrix4fv("projection", projection);
     

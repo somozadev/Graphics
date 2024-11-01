@@ -15,6 +15,7 @@ C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Librar
 C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Lights\BaseLight.cpp;C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Somine\x64\Debug\BaseLight.obj
 C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Lights\DirectionalLight.cpp;C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Somine\x64\Debug\DirectionalLight.obj
 C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Lights\PointLight.cpp;C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Somine\x64\Debug\PointLight.obj
+C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Lights\SpotLight.cpp;C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Somine\x64\Debug\SpotLight.obj
 C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Macros.cpp;C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Somine\x64\Debug\Macros.obj
 C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\main.cpp;C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Somine\x64\Debug\main.obj
 C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\OldMesh.cpp;C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\Somine Engine\Somine\Somine\x64\Debug\OldMesh.obj

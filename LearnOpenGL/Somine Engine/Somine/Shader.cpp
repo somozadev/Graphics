@@ -13,6 +13,8 @@
 
 #include "assimpLoader/Material.h"
 #include "Lights/PointLight.h"
+#include <cmath>
+#include <glm/glm/detail/func_trigonometric.hpp>
 
 
 Shader::Shader()
@@ -149,8 +151,21 @@ void Shader::setPointLight(int index, glm::vec3 color, float ambient_intensity, 
     glUniform1f(glGetUniformLocation(id, (uniformName+"constant_attenuation").c_str()), constant_att);
     glUniform1f(glGetUniformLocation(id, (uniformName+"linear_attenuation").c_str()), linear_att);
     glUniform1f(glGetUniformLocation(id, (uniformName+"exponential_attenuation").c_str()), exponential_att);
+}
+void Shader::setSpotLight(int index, glm::vec3 color, float ambient_intensity, float diffuse_intensity, glm::vec3 local_pos, float constant_att, float linear_att, float exponential_att,  glm::vec3 local_direction, float cutoff) const
+{
+    std::string uniformName = "spot_lights[" + std::to_string(index) + "].";
+    glUniform3f(glGetUniformLocation(id, (uniformName+"base.base.color").c_str()), color.r,color.g,color.b);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"base.base.ambient_intensity").c_str()), ambient_intensity);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"base.base.diffuse_intensity").c_str()), diffuse_intensity);
 
+    glUniform3f(glGetUniformLocation(id, (uniformName+"direction").c_str()), local_direction.x,local_direction.y,local_direction.z);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"cutoff").c_str()), cosf(glm::radians(cutoff)));
 
+    glUniform3f(glGetUniformLocation(id, (uniformName+"base.local_position").c_str()), local_pos.x,local_pos.y,local_pos.z);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"base.constant_attenuation").c_str()), constant_att);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"base.linear_attenuation").c_str()), linear_att);
+    glUniform1f(glGetUniformLocation(id, (uniformName+"base.exponential_attenuation").c_str()), exponential_att);
 }
 void Shader::setMaterial(const std::string &name, Material& value) const
 {
@@ -162,3 +177,4 @@ void Shader::setMaterial(const std::string &name, Material& value) const
     glUniform3f(glGetUniformLocation(id, diffuse.c_str()), value.diffuse_color.r,value.diffuse_color.g,value.diffuse_color.b);
     glUniform3f(glGetUniformLocation(id, specular.c_str()), value.specular_color.r,value.specular_color.g,value.specular_color.b);
 }
+

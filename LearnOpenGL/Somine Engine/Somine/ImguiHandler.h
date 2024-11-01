@@ -2,6 +2,7 @@
 #include "assimpLoader/Model.h"
 #include "Lights/DirectionalLight.h"
 #include "Lights/PointLight.h"
+#include "Lights/SpotLight.h"
 
 class ImguiHandler
 {
@@ -16,6 +17,7 @@ public:
     static void addInteger(const char* text, int* reference);
     static void addModel(const char* modelName, Model* model);
     static void addPointLights(std::vector<PointLight*> lights);
+    static void addSpotLights(std::vector<SpotLight*> lights);
     static void mainLight(DirectionalLight* light);
     static void draw();
     static void endWindow();
