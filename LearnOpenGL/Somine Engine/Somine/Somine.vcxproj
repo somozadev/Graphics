@@ -236,6 +236,14 @@
     <Content Include="resources\shaders\grid\vertex_shader.glsl" />
     <Content Include="resources\shaders\lightSource\fragment_shader.glsl" />
     <Content Include="resources\shaders\lightSource\vertex_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\color_pass\fragment_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\color_pass\vertex_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\depth_pass\fragment_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\depth_pass\vertex_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\light_pass\fragment_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\light_pass\vertex_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\stencil_pass\fragment_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\stencil_pass\vertex_shader.glsl" />
     <Content Include="resources\shaders\multipass\TextureFBO\fragment_shader.glsl" />
     <Content Include="resources\shaders\multipass\TextureFBO\vertex_shader.glsl" />
     <Content Include="resources\shaders\vertex_shader.glsl" />
@@ -246,10 +254,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="resources\shaders\multipass\diferred\" />
-    <Folder Include="resources\shaders\multipass\forward\ambient_pass\" />
-    <Folder Include="resources\shaders\multipass\forward\depth_pass\" />
-    <Folder Include="resources\shaders\multipass\forward\light_pass\" />
-    <Folder Include="resources\shaders\multipass\forward\shadow_pass\" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Libraries\include\IMGUI\imgui.natvis" />

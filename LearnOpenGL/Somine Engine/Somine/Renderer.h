@@ -45,23 +45,28 @@ private:
     Model* m_ar47 = NEW(Model, "resources/models/ar/Ar-47.fbx");
 
     GLuint m_FBO{0};
-    GLuint m_textureFBO{0};
+    GLuint m_textureFBO{0}; //final rendered texture
     GLuint m_quadMeshVAO{0};
-    GLuint m_RBO{0};
+    GLuint m_RBO{0}; //rbo for depth and stencil 
 
 
     void drawGrid(glm::mat4 projection, glm::mat4 view);
     void setupMatrices(glm::mat4 projection, glm::mat4 view);
     void calcDeltaTime();
 
+    void depthPass();
+    void stencilPass();
+    void lightPass();
+    void colorPass();
 public:
     Window* m_window;
     float m_delta_time;
     Renderer(Window* window = nullptr);
     void init();
     void initModels();
+    void initFramebuffer();
     void initShadersMap();
-    void update();
-    ~Renderer();
+    void update();    
     void resizeFramebuffer(int width, int height);
+    ~Renderer();
 };

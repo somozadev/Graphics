@@ -11,7 +11,7 @@ Camera::Camera(Window* window): m_window(window)
     m_last_x_mouse_pos = xpos;
     m_last_y_mouse_pos = ypos;
 
-    m_position = glm::vec3(0.0f, 2.0f, 3.0f);
+    m_position = glm::vec3(0.0f, 1.0f, 10.0f);
     m_target = glm::vec3(0.0f, 0.0f, 0.0f);
     m_front = glm::vec3(0.0f, 0.0f, -1.0f);
     m_direction = glm::normalize(m_position - m_target);

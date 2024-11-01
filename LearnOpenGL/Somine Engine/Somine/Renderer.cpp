@@ -22,6 +22,7 @@ Renderer::Renderer(Window* window) : m_camera(window)
     init();
     initShadersMap();
     initModels();
+    initFramebuffer();
     glfwSetFramebufferSizeCallback(window->getGLFWWindow(), framebuffer_size_callback);
     glfwSetWindowUserPointer(window->getGLFWWindow(), this);
 }
@@ -29,7 +30,20 @@ Renderer::Renderer(Window* window) : m_camera(window)
 void Renderer::initShadersMap()
 {
     m_shaders.insert({
-        "default", NEW(Shader, "resources/shaders/vertex_shader.glsl", "resources/shaders/fragment_shader.glsl")
+        "depth_pass", NEW(Shader, "resources/shaders/multipass/forward/depth_pass/vertex_shader.glsl",
+                          "resources/shaders/multipass/forward/depth_pass/fragment_shader.glsl")
+    });
+    m_shaders.insert({
+        "stencil_pass", NEW(Shader, "resources/shaders/multipass/forward/stencil_pass/vertex_shader.glsl",
+                            "resources/shaders/multipass/forward/stencil_pass/fragment_shader.glsl")
+    });
+    m_shaders.insert({
+        "color_pass", NEW(Shader, "resources/shaders/multipass/forward/color_pass/vertex_shader.glsl",
+                          "resources/shaders/multipass/forward/color_pass/fragment_shader.glsl")
+    });
+    m_shaders.insert({
+        "light_pass", NEW(Shader, "resources/shaders/multipass/forward/light_pass/vertex_shader.glsl",
+                          "resources/shaders/multipass/forward/light_pass/fragment_shader.glsl")
     });
     m_shaders.insert({
         "grid",NEW(Shader, "resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")
@@ -59,63 +73,62 @@ void Renderer::init()
 
 void Renderer::initModels()
 {
-    m_models.emplace_back(m_light);
-    Model* light = m_models.back();
-    light->transform->move(0.0, 2.0, 5.0);
-    light->transform->scale(0.2, 0.2, 0.2);
-    light->setShaderRef(m_shaders["assimp"]);
-
-    for (int i = 0; i < 1; ++i)
-    {
-        PointLight* p_light = NEW(PointLight, i);
-        m_point_lights.emplace_back(p_light);
-    
-        m_models.emplace_back(p_light);
-        Model* pm_light = m_models.back();
-        pm_light->transform->move(1 + i, 1.0, 0.0);
-        pm_light->setShaderRef(m_shaders["assimp"]);
-    }
-    
-    for (int i = 0; i < 1; ++i)
-    {
-        SpotLight* s_light = NEW(SpotLight, i);
-        m_spot_lights.emplace_back(s_light);
-    
-        m_models.emplace_back(s_light);
-        Model* sm_light = m_models.back();
-        sm_light->transform->move(1.0 + i, 2.0, 0.0);
-        sm_light->setShaderRef(m_shaders["assimp"]);
-    }
-    
     m_models.emplace_back(NEW(Terrain, 20, 60, 0.20f, "resources/textures/tough_grass.jpg"));
     Model* terrain = m_models.back();
     terrain->transform->move(0.0f, -2.0f, 0.0f);
     terrain->transform->scale(1.0f, 1.0f, 1.0f);
     terrain->transform->rotate(0.0f, 0.0f, 0.0f);
-    terrain->setShaderRef(m_shaders["assimp"]);
 
     m_models.emplace_back(m_ar47);
     Model* ar47 = m_models.back();
     ar47->transform->move(-8.0f, 0.0f, 0.0f);
     ar47->transform->scale(0.5f, 0.5f, 0.5f);
     ar47->transform->rotate(-90.0f, 0.0f, 0.0f);
-    ar47->setShaderRef(m_shaders["assimp"]);
 
     m_models.emplace_back(NEW(Model, "resources/models/backpack/backpack.obj"));
     Model* backpack = m_models.back();
     backpack->transform->move(0.0f, 0.0f, 0.0f);
     backpack->transform->scale(0.25f, 0.25f, 0.25f);
     backpack->transform->rotate(0.0f, 0.0f, 0.0f);
-    backpack->setShaderRef(m_shaders["assimp"]);
 
     m_models.emplace_back(NEW(Model, "resources/models/cup/coffee_cup_fbx.fbx"));
     Model* cup = m_models.back();
     cup->transform->move(2.0f, 0.0f, 0.0f);
     cup->transform->scale(1.5f, 1.5f, 1.5f);
     cup->transform->rotate(0.0f, 0.0f, 0.0f);
-    cup->setShaderRef(m_shaders["assimp"]);
+
+    
+    m_models.emplace_back(m_light);
+    Model* light = m_models.back();
+    light->transform->move(0.0, 2.0, 5.0);
+    light->transform->scale(0.2, 0.2, 0.2);
+
+    for (int i = 0; i < 1; ++i)
+    {
+        PointLight* p_light = NEW(PointLight, i);
+        m_point_lights.emplace_back(p_light);
+
+        m_models.emplace_back(p_light);
+        Model* pm_light = m_models.back();
+        pm_light->transform->move(1 + i, 1.0, 0.0);
+    }
+
+    for (int i = 0; i < 1; ++i)
+    {
+        SpotLight* s_light = NEW(SpotLight, i);
+        m_spot_lights.emplace_back(s_light);
+
+        m_models.emplace_back(s_light);
+        Model* sm_light = m_models.back();
+        sm_light->transform->move(1.0 + i, 2.0, 0.0);
+    }
+
+  
+}
 
 
+void Renderer::initFramebuffer()
+{
     //quad-mesh 
 
     std::vector<glm::vec2> m_quad_vertices(4);
@@ -167,16 +180,99 @@ void Renderer::initModels()
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "Error: FBO incomplete" << std::endl;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void Renderer::depthPass()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    glEnable(GL_DEPTH_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glColorMask(GL_FALSE,GL_FALSE,GL_FALSE,GL_FALSE);
+    m_shaders["depth_pass"]->use();
+    for (auto& model : m_models)
+    {
+        model->setShaderRef(m_shaders["depth_pass"]);
+        model->draw(m_shaders["depth_pass"]);
+    }
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+}
+
+void Renderer::stencilPass()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE); //write control over stencil
+    glStencilFunc(GL_ALWAYS, 1, 0xFF); //write a ref value 1
+    glStencilMask(0xFF); //activate writing in stencil buffer
+
+    m_shaders["stencil_pass"]->use();
+    for (auto& model : m_models)
+    {
+        model->setShaderRef(m_shaders["stencil_pass"]);
+        model->draw(m_shaders["stencil_pass"]);
+    }
+
+    glStencilMask(0x00); //block stencil writing for next passes
+    glDisable(GL_STENCIL_TEST);
+}
+
+void Renderer::colorPass()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_shaders["color_pass"]->use();
+    for (auto& model : m_models)
+    {
+        model->setShaderRef(m_shaders["color_pass"]);
+        model->draw(m_shaders["color_pass"]);
+    }
+}
+
+void Renderer::lightPass()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_shaders["light_pass"]->use();
+    for (auto& model : m_models)
+    {
+        model->setShaderRef(m_shaders["light_pass"]);
+
+
+        m_light->calcLocalDirection(model->transform->getModelMatrix());
+        m_light->setShaderRef(m_shaders["light_pass"]);
+        m_shaders["light_pass"]->setVec3("camera_local_position",
+                                         m_camera.getCameraLocalPosRelativeTo(model->transform->getModelMatrix()));
+
+        for (const auto point_light : m_point_lights)
+        {
+            point_light->setShaderRef(m_shaders["light_pass"]);
+            point_light->calcLocalPosition(model->transform->getModelMatrix());
+            point_light->setShaderData();
+        }
+
+        for (const auto spot_light : m_spot_lights)
+        {
+            spot_light->setShaderRef(m_shaders["light_pass"]);
+            spot_light->calcLocalDirectionAndPosition(model->transform->getModelMatrix());
+            spot_light->setShaderData();
+        }
+        model->draw(m_shaders["light_pass"]);
+    }
+}
 
 void Renderer::update()
 {
     calcDeltaTime();
     ImguiHandler::startWindow("settings");
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
-    glEnable(GL_DEPTH_TEST);
+    // glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    // glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
     glPolygonMode(GL_FRONT_AND_BACK, m_wireframe ? GL_LINE : GL_FILL);
@@ -189,26 +285,30 @@ void Renderer::update()
     setupMatrices(projection, view);
 
 
-    for (auto model : m_models)
-    {
-        m_light->calcLocalDirection(model->transform->getModelMatrix());
-        m_light->setShaderRef(m_shaders["assimp"]);
-        m_shaders["assimp"]->setVec3("camera_local_position", m_camera.getCameraLocalPosRelativeTo(model->transform->getModelMatrix()));
-        for (const auto point_light : m_point_lights)
-        {
-            point_light->calcLocalPosition(model->transform->getModelMatrix());
-            point_light->setShaderData();
-        }
+    // for (auto model : m_models)
+    // {
+    //     m_light->calcLocalDirection(model->transform->getModelMatrix());
+    //     m_light->setShaderRef(m_shaders["assimp"]);
+    //     m_shaders["assimp"]->setVec3("camera_local_position", m_camera.getCameraLocalPosRelativeTo(model->transform->getModelMatrix()));
+    //     for (const auto point_light : m_point_lights)
+    //     {
+    //         point_light->calcLocalPosition(model->transform->getModelMatrix());
+    //         point_light->setShaderData();
+    //     }
+    //
+    //     for (const auto spot_light : m_spot_lights)
+    //     {
+    //         spot_light->calcLocalDirectionAndPosition(model->transform->getModelMatrix());
+    //         spot_light->setShaderData();
+    //     }
+    //     model->draw();
+    // }
 
-        for (const auto spot_light : m_spot_lights)
-        {
-            spot_light->calcLocalDirectionAndPosition(model->transform->getModelMatrix());
-            spot_light->setShaderData();
-        }
-        model->draw();
-    }
+    depthPass();
+    stencilPass();
+    colorPass();
+    lightPass();
     drawGrid(projection, view);
-
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0); //draw to the screen
     glViewport(0, 0, m_window->m_width, m_window->m_height);
@@ -225,7 +325,7 @@ void Renderer::update()
     m_shaders["fbo"]->setInt("source_texture", 0);
 
 
-    glDisable(GL_DEPTH_TEST);
+    // glDisable(GL_DEPTH_TEST);
     glBindVertexArray(m_quadMeshVAO);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
     glBindVertexArray(0);
@@ -246,15 +346,26 @@ void Renderer::update()
 
 void Renderer::setupMatrices(glm::mat4 projection, glm::mat4 view)
 {
-    m_shaders["assimp"]->use();
-    m_shaders["assimp"]->setInt("n_point_lights",1);
-    m_shaders["assimp"]->setInt("n_spot_lights",1);
-    m_shaders["assimp"]->setUniformMatrix4fv("view", view);
-    m_shaders["assimp"]->setUniformMatrix4fv("projection", projection);
-    
-    m_shaders["assimp"]->setBool("use_cell_shading", m_cell_shading);
-    m_shaders["assimp"]->setBool("use_greyscale_shading", m_greyscale_shading);
-    m_shaders["assimp"]->setInt("cell_shading_levels", m_cell_shading_levels);
+    m_shaders["light_pass"]->use();
+    m_shaders["light_pass"]->setInt("n_point_lights", 1);
+    m_shaders["light_pass"]->setInt("n_spot_lights", 1);
+    m_shaders["light_pass"]->setUniformMatrix4fv("view", view);
+    m_shaders["light_pass"]->setUniformMatrix4fv("projection", projection);
+    m_shaders["light_pass"]->setBool("use_cell_shading", m_cell_shading);
+    m_shaders["light_pass"]->setBool("use_greyscale_shading", m_greyscale_shading);
+    m_shaders["light_pass"]->setInt("cell_shading_levels", m_cell_shading_levels);
+
+    m_shaders["depth_pass"]->use();
+    m_shaders["depth_pass"]->setUniformMatrix4fv("view", view);
+    m_shaders["depth_pass"]->setUniformMatrix4fv("projection", projection);
+
+    m_shaders["stencil_pass"]->use();
+    m_shaders["stencil_pass"]->setUniformMatrix4fv("view", view);
+    m_shaders["stencil_pass"]->setUniformMatrix4fv("projection", projection);
+
+    m_shaders["color_pass"]->use();
+    m_shaders["color_pass"]->setUniformMatrix4fv("view", view);
+    m_shaders["color_pass"]->setUniformMatrix4fv("projection", projection);
 }
 
 void Renderer::calcDeltaTime()
