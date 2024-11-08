@@ -183,7 +183,25 @@ void Renderer::initFramebuffer()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+void Renderer::initShadowmap()
+{
+    glGenFramebuffers(1, &m_shadowmap_FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO); //bind for writing 
 
+    glGenTextures(1, &m_shadowmap_texture_FBO);
+    glActiveTexture(GL_TEXTURE0); //bind for reading
+    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);//bind for reading
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 512 * m_shadow_resolution, 512 * m_shadow_resolution, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,  m_shadowmap_texture_FBO, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+}
 void Renderer::depthPass()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
@@ -221,7 +239,23 @@ void Renderer::stencilPass()
     glDisable(GL_STENCIL_TEST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+void Renderer::shadowmapPass()
+{
+    //first sub-pass 
+    glViewport(0, 0, 512 * m_shadow_resolution, 512 * m_shadow_resolution);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO); 
+    glClear(GL_DEPTH_BUFFER_BIT);
+    //    ConfigureShaderAndMatrices();
+    // RenderScene();
 
+    //second sub-pass 
+    glViewport(0, 0,  m_window->m_width, m_window->m_height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // ConfigureShaderAndMatrices();
+    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    
+}
 void Renderer::colorPass()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
@@ -281,7 +315,6 @@ void Renderer::update()
     calcDeltaTime();
     ImguiHandler::startWindow("settings");
 
-
     glEnable(GL_CULL_FACE);
     glPolygonMode(GL_FRONT_AND_BACK, m_wireframe ? GL_LINE : GL_FILL);
 
@@ -296,6 +329,7 @@ void Renderer::update()
     depthPass();
     stencilPass();
     colorPass();
+    shadowmapPass();
     lightPass();
     drawGrid(projection, view);
 

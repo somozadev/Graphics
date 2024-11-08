@@ -49,8 +49,12 @@ private:
     GLuint m_textureFBO{0}; //final rendered texture
     GLuint m_quadMeshVAO{0};
     GLuint m_RBO{0}; //rbo for depth and stencil 
+    
+    GLuint m_shadowmap_FBO {0};
+    GLuint m_shadowmap_texture_FBO {0};
 
-
+    int m_shadow_resolution{2};
+    
     void drawGrid(glm::mat4 projection, glm::mat4 view);
     void setupMatrices(glm::mat4 projection, glm::mat4 view);
     void calcDeltaTime();
@@ -59,6 +63,7 @@ private:
     void stencilPass();
     void lightPass();
     void colorPass();
+    void shadowmapPass(); 
 public:
     Window* m_window;
     float m_delta_time;
@@ -66,6 +71,7 @@ public:
     void init();
     void initModels();
     void initFramebuffer();
+    void initShadowmap();
     void initShadersMap();
     void update();    
     void resizeFramebuffer(int width, int height);
