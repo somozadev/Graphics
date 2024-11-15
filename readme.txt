@@ -1,9 +1,9 @@
-Somine Engine 🎮🚀
+<br>Somine Engine 🎮🚀</br>
 
-🌟 Overview
+<br>🌟 Overview</br>
 Somine Engine is a lightweight renderer engine built using OpenGL and C++, designed to provide hands-on experience in real-time graphics programming. This project is a part of my learning journey with OpenGL, focusing on creating a flexible and performant engine for rendering 3D graphics. Once the renderer is in a good state, will mutate into a game engine.
 
-🛠 Features
+<br>🛠 Features</br>
 Real-Time 3D Rendering: Built on top of OpenGL for high-performance graphics.
 Custom Shader Support: Load and manage custom vertex, fragment, and geometry shaders.
 Lighting & Shadows: Supports directional, point, and spotlights, currenty implementing shadows.
@@ -12,37 +12,30 @@ Camera System: Easy-to-use camera controls (FPS & free-look modes).
 Materials & Textures: Supports diffuse, specular, and normal mapping.
 
 
-🚀 Getting Started
+<br>🚀 Getting Started</br>
 Prerequisites
 C++17 or higher
-OpenGL 3.1
+OpenGL 3.3
 GLFW & GLAD for window management and OpenGL functions
 Assimp for model loading
 CMake for project building
-Installation
-Clone the Repository:
 
+Installation
 git clone https://github.com/somozadev/Graphics.git
 cd Somine Engine/Somine/Somine.sln
 
 
-🎮 Controls
+<br>🎮 Controls</br>
 WASD: Move camera
 Mouse 2: Look around
 
-🖼 Screenshots
-
-
-
-TODO List
+<br>🖼 TODO List</br>
  Implement deferred rendering
  Mutate from renderer to game engine
  Implement particle systems
 
 
 
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+<br>📄 License</br>
+This project is licensed under the MIT License 
 
-🙏 Acknowledgements
-LearnOpenGL for the excellent tutorials
