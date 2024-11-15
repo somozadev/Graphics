@@ -1,0 +1,5 @@
+﻿  Building Custom Rule C:/Users/mesom/Documents/GitHub/Graphics/LearnOpenGL/glfw-3.4/tests/CMakeLists.txt
+  threads.c
+  tinycthread.c
+  Generando código...
+  threads.vcxproj -> C:\Users\mesom\Documents\GitHub\Graphics\LearnOpenGL\glfw-3.4\build\tests\Debug\threads.exe
