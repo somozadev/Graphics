@@ -46,6 +46,10 @@ void Renderer::initShadersMap()
                           "resources/shaders/multipass/forward/light_pass/fragment_shader.glsl")
     });
     m_shaders.insert({
+        "shadowmap_pass", NEW(Shader, "resources/shaders/multipass/forward/shadowmap_pass/vertex_shader.glsl",
+                          "resources/shaders/multipass/forward/shadowmap_pass/fragment_shader.glsl")
+    });
+    m_shaders.insert({
         "grid",NEW(Shader, "resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")
     });
     m_shaders.insert({
@@ -243,17 +247,28 @@ void Renderer::shadowmapPass()
 {
     //first sub-pass 
     glViewport(0, 0, 512 * m_shadow_resolution, 512 * m_shadow_resolution);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO); 
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_shadowmap_FBO); 
     glClear(GL_DEPTH_BUFFER_BIT);
-    //    ConfigureShaderAndMatrices();
-    // RenderScene();
+
+    m_shaders["shadowmap_pass"]->use();
+    glm::mat4 shadowmap_view = glm::lookAt(m_light->transform->position, m_light->getLocalDirection(), glm::vec3(0.0f,1.0f,0.0f));
+    glm::mat4 shadowmap_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+    m_shaders["shadowmap_pass"]->setUniformMatrix4fv("view", shadowmap_view);
+    m_shaders["shadowmap_pass"]->setUniformMatrix4fv("projection", shadowmap_projection);
+    for (auto& model : m_models)
+    {
+        model->draw(m_shaders["shadowmap_pass"]);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     //second sub-pass 
     glViewport(0, 0,  m_window->m_width, m_window->m_height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // ConfigureShaderAndMatrices();
+    m_shaders["shadowmap_pass"]->setInt("texture_shadowmap",0);
+    glActiveTexture(0);
     glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    //RenderScene
     
 }
 void Renderer::colorPass()
@@ -329,8 +344,8 @@ void Renderer::update()
     depthPass();
     stencilPass();
     colorPass();
-    shadowmapPass();
     lightPass();
+    shadowmapPass();
     drawGrid(projection, view);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
