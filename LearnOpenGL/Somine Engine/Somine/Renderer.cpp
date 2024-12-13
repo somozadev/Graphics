@@ -1,4 +1,4 @@
-﻿#include "Renderer.h"
+#include "Renderer.h"
 
 #include <glm/glm/detail/type_mat4x4.hpp>
 #include <glm/glm/gtc/matrix_transform.hpp>
@@ -23,6 +23,7 @@ Renderer::Renderer(Window* window) : m_camera(window)
     initShadersMap();
     initModels();
     initFramebuffer();
+
     glfwSetFramebufferSizeCallback(window->getGLFWWindow(), framebuffer_size_callback);
     glfwSetWindowUserPointer(window->getGLFWWindow(), this);
 }
@@ -44,6 +45,10 @@ void Renderer::initShadersMap()
     m_shaders.insert({
         "light_pass", NEW(Shader, "resources/shaders/multipass/forward/light_pass/vertex_shader.glsl",
                           "resources/shaders/multipass/forward/light_pass/fragment_shader.glsl")
+    });
+    m_shaders.insert({
+        "shadowmap_pass", NEW(Shader, "resources/shaders/multipass/forward/shadowmap_pass/vertex_shader.glsl",
+                              "resources/shaders/multipass/forward/shadowmap_pass/fragment_shader.glsl")
     });
     m_shaders.insert({
         "grid",NEW(Shader, "resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")
@@ -183,25 +188,32 @@ void Renderer::initFramebuffer()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
 void Renderer::initShadowmap()
 {
     glGenFramebuffers(1, &m_shadowmap_FBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO); //bind for writing 
+    glDisable(GL_BLEND);
 
     glGenTextures(1, &m_shadowmap_texture_FBO);
-    glActiveTexture(GL_TEXTURE0); //bind for reading
-    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);//bind for reading
-    glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 512 * m_shadow_resolution, 512 * m_shadow_resolution, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO); //bind for reading
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 512 * m_shadow_resolution, 512 * m_shadow_resolution, 0,
+                 GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D,  m_shadowmap_texture_FBO, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO); //bind for writing 
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowmap_texture_FBO, 0);
     glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);  
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        std::cerr << "Error: Shadowmap FBO no es completo" << std::endl;
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
 void Renderer::depthPass()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
@@ -239,23 +251,36 @@ void Renderer::stencilPass()
     glDisable(GL_STENCIL_TEST);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
 void Renderer::shadowmapPass()
 {
-    //first sub-pass 
-    glViewport(0, 0, 512 * m_shadow_resolution, 512 * m_shadow_resolution);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO); 
-    glClear(GL_DEPTH_BUFFER_BIT);
-    //    ConfigureShaderAndMatrices();
-    // RenderScene();
+    initShadowmap();
 
-    //second sub-pass 
-    glViewport(0, 0,  m_window->m_width, m_window->m_height);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // ConfigureShaderAndMatrices();
-    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
-    
+    //first sub-pass 
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_shadowmap_FBO);
+    glViewport(0, 0, 512 * m_shadow_resolution, 512 * m_shadow_resolution);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    m_shaders["shadowmap_pass"]->use();
+    glm::mat4 shadowmap_view = glm::lookAt(m_light->transform->position, m_light->getLocalDirection(),
+                                           glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 shadowmap_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+    m_shaders["shadowmap_pass"]->setUniformMatrix4fv("view", shadowmap_view);
+    m_shaders["shadowmap_pass"]->setUniformMatrix4fv("projection", shadowmap_projection);
+    for (auto& model : m_models)
+    {
+        model->draw(m_shaders["shadowmap_pass"]);
+    }
+
+    // //second sub-pass 
+    // glViewport(0, 0, m_window->m_width, m_window->m_height);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // m_shaders["shadowmap_pass"]->setInt("texture_shadowmap", 0);
+    // glActiveTexture(0);
+    // glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
+    // glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+    // //RenderScene
 }
+
 void Renderer::colorPass()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
@@ -326,9 +351,10 @@ void Renderer::update()
     setupMatrices(projection, view);
 
 
-    depthPass();
-    stencilPass();
-    colorPass();
+    // depthPass();
+    // stencilPass();
+    // colorPass();
+    // lightPass();
     shadowmapPass();
     lightPass();
     drawGrid(projection, view);
@@ -339,7 +365,7 @@ void Renderer::update()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_shaders["fbo"]->use();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_textureFBO);
+    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
     m_shaders["fbo"]->setInt("source_texture", 0);
 
     glBindVertexArray(m_quadMeshVAO);
