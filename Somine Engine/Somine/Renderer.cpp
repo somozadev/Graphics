@@ -46,10 +46,10 @@ void Renderer::initShadersMap()
         "light_pass", NEW(Shader, "resources/shaders/multipass/forward/light_pass/vertex_shader.glsl",
                           "resources/shaders/multipass/forward/light_pass/fragment_shader.glsl")
     });
-    m_shaders.insert({
-        "shadowmap_pass", NEW(Shader, "resources/shaders/multipass/forward/shadowmap_pass/vertex_shader.glsl",
-                              "resources/shaders/multipass/forward/shadowmap_pass/fragment_shader.glsl")
-    });
+    // m_shaders.insert({
+    //     "shadowmap_pass", NEW(Shader, "resources/shaders/multipass/forward/shadowmap_pass/vertex_shader.glsl",
+    //                           "resources/shaders/multipass/forward/shadowmap_pass/fragment_shader.glsl")
+    // });
     m_shaders.insert({
         "grid",NEW(Shader, "resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")
     });
@@ -60,6 +60,10 @@ void Renderer::initShadersMap()
     m_shaders.insert({
         "fbo",NEW(Shader, "resources/shaders/multipass/TextureFBO/vertex_shader.glsl",
                   "resources/shaders/multipass/TextureFBO/fragment_shader.glsl")
+    });
+    m_shaders.insert({
+        "antialiasing",NEW(Shader, "resources/shaders/antialiasing/vertex_shader.glsl",
+                           "resources/shaders/antialiasing/fragment_shader.glsl")
     });
 }
 
@@ -133,6 +137,16 @@ void Renderer::initModels()
 void Renderer::initFramebuffer()
 {
     //quad-mesh 
+    float quadVertices[] = {
+        
+        -1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 
+        -1.0f, -1.0f, 0.0f,  0.0f, 0.0f, 
+         1.0f, -1.0f, 0.0f,  1.0f, 0.0f, 
+         1.0f,  1.0f, 0.0f,  1.0f, 1.0f  
+    };unsigned int indices[] = {
+        0, 1, 2,  
+        0, 2, 3   
+    };
 
     std::vector<glm::vec2> m_quad_vertices(4);
     m_quad_vertices[0] = glm::vec2(-1, -1);
@@ -141,19 +155,29 @@ void Renderer::initFramebuffer()
     m_quad_vertices[3] = glm::vec2(-1, 1);
 
     GLuint quadMeshVBO;
+    GLuint quadMeshEBO;
 
     glGenVertexArrays(1, &m_quadMeshVAO);
-    glBindVertexArray(m_quadMeshVAO);
-
     glGenBuffers(1, &quadMeshVBO);
+    glGenBuffers(1, &quadMeshEBO);
+
+    glBindVertexArray(m_quadMeshVAO);
+    
     glBindBuffer(GL_ARRAY_BUFFER, quadMeshVBO);
-    glBufferData(GL_ARRAY_BUFFER, m_quad_vertices.size() * sizeof(glm::vec2), m_quad_vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMeshEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
+    
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2,GL_FLOAT, GL_FALSE, sizeof(glm::vec2), 0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     GLint m_viewport_size[4];
     glGetIntegerv(GL_VIEWPORT, m_viewport_size);
@@ -167,13 +191,15 @@ void Renderer::initFramebuffer()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_textureFBO);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLint)m_window->m_width, (GLint)m_window->m_height, 0, GL_RGB,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLint)m_window->m_width, (GLint)m_window->m_height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureFBO, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
 
     //depth info
@@ -187,6 +213,19 @@ void Renderer::initFramebuffer()
         std::cerr << "Error: FBO incomplete" << std::endl;
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // glGenTextures(1, &m_depthTexture);
+    // glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, (GLint)m_window->m_width, (GLint)m_window->m_height, 0,
+    //              GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    //
+    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
+    //
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::initShadowmap()
@@ -306,7 +345,7 @@ void Renderer::lightPass()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //| GL_DEPTH_BUFFER_BIT
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_shaders["light_pass"]->use();
     for (auto& model : m_models)
     {
@@ -351,29 +390,63 @@ void Renderer::update()
     setupMatrices(projection, view);
 
 
-    // depthPass();
-    // stencilPass();
-    // colorPass();
-    // lightPass();
-    shadowmapPass();
+    depthPass();
+    stencilPass();
+    colorPass();
     lightPass();
+    // shadowmapPass();
     drawGrid(projection, view);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, m_window->m_width, m_window->m_height);
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    m_shaders["fbo"]->use();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
-    m_shaders["fbo"]->setInt("source_texture", 0);
 
-    glBindVertexArray(m_quadMeshVAO);
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-    glBindVertexArray(0);
+    if (m_antialiasing)
+    {
+        glDisable(GL_DEPTH_TEST);
+
+        m_shaders["antialiasing"]->use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_textureFBO);
+        m_shaders["antialiasing"]->setInt("screen_texture", 0);
+        m_shaders["antialiasing"]->setInt("debug_mode", m_antialiasing_debug_mode);
+        m_shaders["antialiasing"]->setFloat("FXAA_MAX_SPAN", m_antialiasing_max_span);
+        m_shaders["antialiasing"]->setFloat("FXAA_LUMA_THRESHOLD", m_antialiasing_luma_threshold);
+        m_shaders["antialiasing"]->setFloat("FXAA_MUL_REDUCE", (1.0 / m_antialiasing_mul_reduce));
+        m_shaders["antialiasing"]->setFloat("FXAA_MIN_REDUCE", (1.0 / m_antialiasing_min_reduce));
+
+        const auto inverse_screen_size = glm::vec2(1.0f / m_window->m_width, 1.0f / m_window->m_height);
+        m_shaders["antialiasing"]->setVec2("inverse_screen_size", inverse_screen_size);
+
+        glBindVertexArray(m_quadMeshVAO);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        glBindVertexArray(0);
+        glEnable(GL_DEPTH_TEST);
+    }
+    else
+    {
+        m_shaders["fbo"]->use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_textureFBO);
+        m_shaders["fbo"]->setInt("source_texture", 0);
+
+        glBindVertexArray(m_quadMeshVAO);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        glBindVertexArray(0);
+    }
 
 
+    ImguiHandler::showFrameRate("FPS", m_delta_time);
+    ImguiHandler::showMs("ms", m_current_ms);
     ImguiHandler::addCheckBox("wireframe", &m_wireframe);
+    ImguiHandler::addCheckBox("antialiasing", &m_antialiasing);
+    ImguiHandler::addInteger("antialiasing debug mode", &m_antialiasing_debug_mode, 0, 3);
+    ImguiHandler::addFloat("antialiasing mul reduce", &m_antialiasing_mul_reduce, 1, 64);
+    ImguiHandler::addFloat("antialiasing min reduce", &m_antialiasing_min_reduce, 1, 128);
+    ImguiHandler::addFloat("antialiasing luma threshold", &m_antialiasing_luma_threshold, 0.00001f, 1.0f);
+    ImguiHandler::addInteger("antialiasing max span", &m_antialiasing_max_span, 1, 128);
+
     ImguiHandler::addCheckBox("grayscale shading", &m_greyscale_shading);
     ImguiHandler::addCheckBox("dark n white shading", &m_dnw_shading);
     ImguiHandler::addCheckBox("cell shading", &m_cell_shading);
@@ -416,6 +489,7 @@ void Renderer::calcDeltaTime()
     m_current_frame = static_cast<float>(glfwGetTime());
     m_delta_time = m_current_frame - m_last_frame;
     m_last_frame = m_current_frame;
+    m_current_ms = m_delta_time * 1000.0f;
     m_camera.update(m_delta_time);
 }
 
@@ -462,6 +536,15 @@ void Renderer::resizeFramebuffer(int width, int height)
     glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    // glDeleteTextures(1, &m_depthTexture);
+    // glGenTextures(1, &m_depthTexture);
+    // glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

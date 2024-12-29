@@ -34,6 +34,14 @@ private:
     float m_last_frame;
 
     bool m_wireframe{false};
+    
+    bool m_antialiasing{true};
+    int m_antialiasing_debug_mode{0};
+    float m_antialiasing_mul_reduce {8.0f};
+    float m_antialiasing_min_reduce {128.0f};
+    float m_antialiasing_luma_threshold {0.05f};
+    int m_antialiasing_max_span {8};
+    
     bool m_cell_shading{false};
     bool m_greyscale_shading{false};
     bool m_dnw_shading{false};
@@ -49,7 +57,7 @@ private:
     GLuint m_textureFBO{0}; //final rendered texture
     GLuint m_quadMeshVAO{0};
     GLuint m_RBO{0}; //rbo for depth and stencil 
-    
+    GLuint m_depthTexture{0};
     GLuint m_shadowmap_FBO {0};
     GLuint m_shadowmap_texture_FBO {0};
 
@@ -67,6 +75,7 @@ private:
 public:
     Window* m_window;
     float m_delta_time;
+    float m_current_ms;
     Renderer(Window* window = nullptr);
     void init();
     void initModels();

@@ -18,7 +18,23 @@ void ImguiHandler::startWindow(const char* name)
     newFrame();
     ImGui::Begin(name);
 }
-
+void ImguiHandler::showFrameRate(const char* text, float deltaTime)
+{
+    if (ImGui::TreeNode(text))
+    {
+        float frameRate = 1.0f / deltaTime; 
+        ImGui::Text("Frame Rate: %.1f FPS", frameRate);
+        ImGui::TreePop();
+    }
+}
+void ImguiHandler::showMs(const char* text, float ms)
+{
+    if (ImGui::TreeNode(text))
+    {
+        ImGui::Text("Latency: %.1f ms", ms);
+        ImGui::TreePop();
+    }
+}
 void ImguiHandler::addColorModifier(const char* text, vector<GLfloat>& colorReference)
 {
     if (ImGui::TreeNode(text))
@@ -38,6 +54,23 @@ void ImguiHandler::addSingleModel(const char* text, Transform* transform)
         ImGui::TreePop();
     }
 }
+void ImguiHandler::addInteger(const char* text, int* reference, int min , int max)
+{
+    if (ImGui::TreeNode(text))
+    {
+        ImGui::SliderInt(text, reference, min, max);
+        ImGui::TreePop();
+    }
+}
+void ImguiHandler::addFloat(const char* text, float* reference, float min , float max)
+{
+    if (ImGui::TreeNode(text))
+    {
+        ImGui::SliderFloat(text, reference, min, max);
+        ImGui::TreePop();
+    }
+}
+
 
 void ImguiHandler::addInteger(const char* text, int* reference)
 {

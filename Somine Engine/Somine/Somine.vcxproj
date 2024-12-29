@@ -229,6 +229,8 @@
     <Content Include="resources\models\cup\textures\metallic.png" />
     <Content Include="resources\models\cup\textures\normal.png" />
     <Content Include="resources\models\cup\textures\roughness.png" />
+    <Content Include="resources\shaders\antialiasing\fragment_shader.glsl" />
+    <Content Include="resources\shaders\antialiasing\vertex_shader.glsl" />
     <Content Include="resources\shaders\assimp\fragment_shader.glsl" />
     <Content Include="resources\shaders\assimp\vertex_shader.glsl" />
     <Content Include="resources\shaders\fragment_shader.glsl" />
