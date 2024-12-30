@@ -7,7 +7,7 @@
  *This has some limitations, such as only managing cleanly 1 window...
  *Should get improved in an object per window basis 
  */
-class ImguiHandler 
+class ImguiHandler
 {
 private:
     static void newFrame();
@@ -28,5 +28,5 @@ public:
     static void mainLight(DirectionalLight* light);
     static void draw();
     static void endWindow();
-    static void update(bool &wireframe,bool &see_grid, Model* light,std::vector<GLfloat> bg_color);
+    static void update(bool& wireframe, bool& see_grid, Model* light, std::vector<GLfloat> bg_color);
 };

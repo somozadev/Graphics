@@ -233,6 +233,8 @@
     <Content Include="resources\shaders\antialiasing\vertex_shader.glsl" />
     <Content Include="resources\shaders\assimp\fragment_shader.glsl" />
     <Content Include="resources\shaders\assimp\vertex_shader.glsl" />
+    <Content Include="resources\shaders\dof\fragment_shader.glsl" />
+    <Content Include="resources\shaders\dof\vertex_shader.glsl" />
     <Content Include="resources\shaders\fragment_shader.glsl" />
     <Content Include="resources\shaders\grid\fragment_shader.glsl" />
     <Content Include="resources\shaders\grid\vertex_shader.glsl" />

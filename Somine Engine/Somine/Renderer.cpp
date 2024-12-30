@@ -12,6 +12,7 @@
 #include "stb_image.h"
 #include "assimpLoader/Model.h"
 #include "Transform.h"
+#include "IMGUI/imgui.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
@@ -64,6 +65,10 @@ void Renderer::initShadersMap()
     m_shaders.insert({
         "antialiasing",NEW(Shader, "resources/shaders/antialiasing/vertex_shader.glsl",
                            "resources/shaders/antialiasing/fragment_shader.glsl")
+    });
+    m_shaders.insert({
+        "dof",NEW(Shader, "resources/shaders/dof/vertex_shader.glsl",
+                  "resources/shaders/dof/fragment_shader.glsl")
     });
 }
 
@@ -138,14 +143,15 @@ void Renderer::initFramebuffer()
 {
     //quad-mesh 
     float quadVertices[] = {
-        
-        -1.0f,  1.0f, 0.0f,  0.0f, 1.0f, 
-        -1.0f, -1.0f, 0.0f,  0.0f, 0.0f, 
-         1.0f, -1.0f, 0.0f,  1.0f, 0.0f, 
-         1.0f,  1.0f, 0.0f,  1.0f, 1.0f  
-    };unsigned int indices[] = {
-        0, 1, 2,  
-        0, 2, 3   
+
+        -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+        1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 0.0f, 1.0f, 1.0f
+    };
+    unsigned int indices[] = {
+        0, 1, 2,
+        0, 2, 3
     };
 
     std::vector<glm::vec2> m_quad_vertices(4);
@@ -162,14 +168,14 @@ void Renderer::initFramebuffer()
     glGenBuffers(1, &quadMeshEBO);
 
     glBindVertexArray(m_quadMeshVAO);
-    
+
     glBindBuffer(GL_ARRAY_BUFFER, quadMeshVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-    
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, quadMeshEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    
+
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
@@ -202,30 +208,30 @@ void Renderer::initFramebuffer()
     glBindTexture(GL_TEXTURE_2D, 0);
 
 
-    //depth info
-    glGenRenderbuffers(1, &m_RBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, (GLint)m_window->m_width, (GLint)m_window->m_height);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    //depth info -> replaced RBO for depth + stencil for a depthTexture bc the DoF postpro needs to read it in the shader
+    // glGenRenderbuffers(1, &m_RBO);
+    // glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
+    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, (GLint)m_window->m_width, (GLint)m_window->m_height);
+    // glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    //
+    // glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RBO);
+    glGenTextures(1, &m_depthTexture);
+    glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, (GLint)m_window->m_width, (GLint)m_window->m_height, 0,
+                 GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
+
+
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cerr << "Error: FBO incomplete" << std::endl;
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // glGenTextures(1, &m_depthTexture);
-    // glBindTexture(GL_TEXTURE_2D, m_depthTexture);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, (GLint)m_window->m_width, (GLint)m_window->m_height, 0,
-    //              GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    //
-    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
-    //
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Renderer::initShadowmap()
@@ -402,7 +408,33 @@ void Renderer::update()
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (m_antialiasing)
+
+    if (m_dof)
+    {
+        m_shaders["dof"]->use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_textureFBO);
+        m_shaders["dof"]->setInt("color_texture", 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+        m_shaders["dof"]->setInt("depth_texture", 1);
+
+        const auto inverse_screen_size = glm::vec2(1.0f / m_window->m_width, 1.0f / m_window->m_height);
+        m_shaders["dof"]->setVec2("inverse_screen_size", inverse_screen_size);
+
+        m_shaders["dof"]->setFloat("DOF_FOCUS_DISTANCE", m_dof_focus_distance);
+        m_shaders["dof"]->setFloat("DOF_FOCUS_RANGE", m_dof_focus_range);
+        m_shaders["dof"]->setFloat("DOF_BLUR_STRENGTH", m_dof_blur_strength);
+
+        glBindVertexArray(m_quadMeshVAO);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        glBindVertexArray(0);
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    else if (m_antialiasing)
     {
         glDisable(GL_DEPTH_TEST);
 
@@ -436,26 +468,43 @@ void Renderer::update()
         glBindVertexArray(0);
     }
 
-
-    ImguiHandler::showFrameRate("FPS", m_delta_time);
-    ImguiHandler::showMs("ms", m_current_ms);
-    ImguiHandler::addCheckBox("wireframe", &m_wireframe);
-    ImguiHandler::addCheckBox("antialiasing", &m_antialiasing);
-    ImguiHandler::addInteger("antialiasing debug mode", &m_antialiasing_debug_mode, 0, 3);
-    ImguiHandler::addFloat("antialiasing mul reduce", &m_antialiasing_mul_reduce, 1, 64);
-    ImguiHandler::addFloat("antialiasing min reduce", &m_antialiasing_min_reduce, 1, 128);
-    ImguiHandler::addFloat("antialiasing luma threshold", &m_antialiasing_luma_threshold, 0.00001f, 1.0f);
-    ImguiHandler::addInteger("antialiasing max span", &m_antialiasing_max_span, 1, 128);
-
-    ImguiHandler::addCheckBox("grayscale shading", &m_greyscale_shading);
-    ImguiHandler::addCheckBox("dark n white shading", &m_dnw_shading);
-    ImguiHandler::addCheckBox("cell shading", &m_cell_shading);
-    ImguiHandler::addInteger("cell shading levels", &m_cell_shading_levels);
-    ImguiHandler::addCheckBox("grid", &m_see_grid);
-    ImguiHandler::addColorModifier("bg color", m_bg_color);
-    ImguiHandler::mainLight(m_light);
-    ImguiHandler::addPointLights(m_point_lights);
-    ImguiHandler::addSpotLights(m_spot_lights);
+    if (ImGui::CollapsingHeader("Stats"))
+    {
+        ImguiHandler::showFrameRate("FPS", m_delta_time);
+        ImguiHandler::showMs("ms", m_current_ms);
+    }
+    if (ImGui::CollapsingHeader("depth of field"))
+    {
+        ImguiHandler::addCheckBox("dof enabled", &m_dof);
+        ImguiHandler::addFloat("focus distance", &m_dof_focus_distance, 0.01f, 1000.0f);
+        ImguiHandler::addFloat("focus range", &m_dof_focus_range, 0.1f, 1000.0f);
+        ImguiHandler::addFloat("blur strength", &m_dof_blur_strength, 0.0f, 10.0f);
+    }
+    if (ImGui::CollapsingHeader("antialiasing"))
+    {
+        ImguiHandler::addCheckBox("antialiasing enabled", &m_antialiasing);
+        ImguiHandler::addInteger("debug mode", &m_antialiasing_debug_mode, 0, 3);
+        ImguiHandler::addFloat("mul reduce", &m_antialiasing_mul_reduce, 1, 64);
+        ImguiHandler::addFloat("min reduce", &m_antialiasing_min_reduce, 1, 128);
+        ImguiHandler::addFloat("luma threshold", &m_antialiasing_luma_threshold, 0.00001f, 1.0f);
+        ImguiHandler::addInteger("max span", &m_antialiasing_max_span, 1, 128);
+    }
+    if (ImGui::CollapsingHeader("Lights"))
+    {
+        ImguiHandler::mainLight(m_light);
+        ImguiHandler::addPointLights(m_point_lights);
+        ImguiHandler::addSpotLights(m_spot_lights);
+    }
+    if (ImGui::CollapsingHeader("Other Settings"))
+    {
+        ImguiHandler::addCheckBox("wireframe", &m_wireframe);
+        ImguiHandler::addCheckBox("grayscale shading", &m_greyscale_shading);
+        ImguiHandler::addCheckBox("dark n white shading", &m_dnw_shading);
+        ImguiHandler::addCheckBox("cell shading", &m_cell_shading);
+        ImguiHandler::addInteger("cell shading levels", &m_cell_shading_levels);
+        ImguiHandler::addCheckBox("grid", &m_see_grid);
+        ImguiHandler::addColorModifier("bg color", m_bg_color);
+    }
     ImguiHandler::draw();
 }
 
@@ -533,19 +582,20 @@ void Renderer::resizeFramebuffer(int width, int height)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureFBO, 0);
 
     // Resize depth and stencil buffer if needed
-    glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    // glDeleteTextures(1, &m_depthTexture);
-    // glGenTextures(1, &m_depthTexture);
-    // glBindTexture(GL_TEXTURE_2D, m_depthTexture);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
+    // glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
+    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    // glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    //
+    glDeleteTextures(1, &m_depthTexture);
+    glGenTextures(1, &m_depthTexture);
+    glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

@@ -34,6 +34,12 @@ private:
     float m_last_frame;
 
     bool m_wireframe{false};
+
+    bool m_dof{true}; //'with the bottom config you get a cool sharp close-up dof
+    float m_dof_focus_distance{10.0f}; // 0.1
+    float m_dof_focus_range{2.0f}; // 4.375
+    float m_dof_blur_strength{1.0f}; // 10 
+    
     
     bool m_antialiasing{true};
     int m_antialiasing_debug_mode{0};
