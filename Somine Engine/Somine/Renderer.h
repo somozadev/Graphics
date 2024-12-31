@@ -7,6 +7,7 @@
 #include "Helper.h"
 #include "Macros.h"
 #include "OldMesh.h"
+#include "PostProcessingStack.h"
 #include "Shader.h"
 #include "Window.h"
 #include "assimpLoader/Model.h"
@@ -27,12 +28,13 @@ private:
     OldMesh m_grid;
     Camera m_camera;
     std::unordered_map<std::string, const Shader*> m_shaders;
-    std::vector<GLfloat> m_bg_color;
+    // PostProcessingStack m_postProcessingStack;
     std::vector<Model*> m_models;
 
-    float m_current_frame;
-    float m_last_frame;
+    float m_current_frame{};
+    float m_last_frame{};
 
+    std::vector<GLfloat> m_bg_color;
     bool m_wireframe{false};
 
     bool m_dof{true}; //'with the bottom config you get a cool sharp close-up dof
@@ -57,9 +59,11 @@ private:
     DirectionalLight* m_light = NEW(DirectionalLight);
     std::vector<PointLight*> m_point_lights; 
     std::vector<SpotLight*> m_spot_lights; 
-    Model* m_ar47 = NEW(Model, "resources/models/ar/Ar-47.fbx");
 
     GLuint m_FBO{0};
+    GLuint m_postprocessingAuxFBO{0};
+    GLuint m_postprocessingAuxTexture{0};
+    
     GLuint m_textureFBO{0}; //final rendered texture
     GLuint m_quadMeshVAO{0};
     GLuint m_RBO{0}; //rbo for depth and stencil 
@@ -80,8 +84,8 @@ private:
     void shadowmapPass(); 
 public:
     Window* m_window;
-    float m_delta_time;
-    float m_current_ms;
+    float m_delta_time{};
+    float m_current_ms{};
     Renderer(Window* window = nullptr);
     void init();
     void initModels();

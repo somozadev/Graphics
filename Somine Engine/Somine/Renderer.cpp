@@ -16,7 +16,7 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-Renderer::Renderer(Window* window) : m_camera(window)
+Renderer::Renderer(Window* window) : m_camera(window) //, m_postProcessingStack(window->m_width, window->m_height)
 {
     m_window = window;
     m_bg_color = {0.1f, 0.05f, 0.1f, 1.0f};
@@ -24,6 +24,11 @@ Renderer::Renderer(Window* window) : m_camera(window)
     initShadersMap();
     initModels();
     initFramebuffer();
+
+    // if (m_shaders.find("antialiasing") != m_shaders.end())
+    //     m_postProcessingStack.addEffect(m_shaders["antialiasing"], "antialiasing");
+    // if (m_shaders.find("dof") != m_shaders.end())
+    //     m_postProcessingStack.addEffect(m_shaders["dof"], "dof");
 
     glfwSetFramebufferSizeCallback(window->getGLFWWindow(), framebuffer_size_callback);
     glfwSetWindowUserPointer(window->getGLFWWindow(), this);
@@ -93,7 +98,7 @@ void Renderer::initModels()
     terrain->transform->scale(1.0f, 1.0f, 1.0f);
     terrain->transform->rotate(0.0f, 0.0f, 0.0f);
 
-    m_models.emplace_back(m_ar47);
+    m_models.emplace_back(NEW(Model, "resources/models/ar/Ar-47.fbx"));
     Model* ar47 = m_models.back();
     ar47->transform->move(-8.0f, 0.0f, 0.0f);
     ar47->transform->scale(0.5f, 0.5f, 0.5f);
@@ -110,6 +115,24 @@ void Renderer::initModels()
     cup->transform->move(2.0f, 0.0f, 0.0f);
     cup->transform->scale(1.5f, 1.5f, 1.5f);
     cup->transform->rotate(0.0f, 0.0f, 0.0f);
+
+    m_models.emplace_back(NEW(Model, "resources/models/broccoli/broccoli_v3.fbx"));
+    Model* broccoli = m_models.back();
+    broccoli->transform->move(4.0f, 0.0f, 0.0f);
+    broccoli->transform->scale(1.5f, 1.5f, 1.5f);
+    broccoli->transform->rotate(-90.0f, 0.0f, 0.0f);
+
+    m_models.emplace_back(NEW(Model, "resources/models/house/house.fbx"));
+    Model* house = m_models.back();
+    house->transform->move(0.0f, 0.1f, -2.0f);
+    house->transform->scale(5.0f, 5.0f, 5.0f);
+    house->transform->rotate(0.0f, 0.0f, 0.0f);
+
+    m_models.emplace_back(NEW(Model, "resources/models/scientist/scientistHIGH.obj"));
+    Model* scientist = m_models.back();
+    scientist->transform->move(1.0f, 0.0f, 2.0f);
+    scientist->transform->scale(1.0f, 1.0f, 1.0f);
+    scientist->transform->rotate(0.0f, 180.0f, 0.0f);
 
 
     m_models.emplace_back(m_light);
@@ -207,7 +230,6 @@ void Renderer::initFramebuffer()
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureFBO, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-
     //depth info -> replaced RBO for depth + stencil for a depthTexture bc the DoF postpro needs to read it in the shader
     // glGenRenderbuffers(1, &m_RBO);
     // glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
@@ -231,6 +253,26 @@ void Renderer::initFramebuffer()
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cerr << "Error: FBO incomplete" << std::endl;
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    //init quadmesh to postprocessing aux texture
+    glGenFramebuffers(1, &m_postprocessingAuxFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAuxFBO);
+
+    glGenTextures(1, &m_postprocessingAuxTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessingAuxTexture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLint)m_window->m_width, (GLint)m_window->m_height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingAuxTexture, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -408,34 +450,14 @@ void Renderer::update()
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-    if (m_dof)
+    if (m_antialiasing)
     {
-        m_shaders["dof"]->use();
+        if (m_dof)
+            glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAuxFBO);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_textureFBO);
-        m_shaders["dof"]->setInt("color_texture", 0);
 
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, m_depthTexture);
-        m_shaders["dof"]->setInt("depth_texture", 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        const auto inverse_screen_size = glm::vec2(1.0f / m_window->m_width, 1.0f / m_window->m_height);
-        m_shaders["dof"]->setVec2("inverse_screen_size", inverse_screen_size);
-
-        m_shaders["dof"]->setFloat("DOF_FOCUS_DISTANCE", m_dof_focus_distance);
-        m_shaders["dof"]->setFloat("DOF_FOCUS_RANGE", m_dof_focus_range);
-        m_shaders["dof"]->setFloat("DOF_BLUR_STRENGTH", m_dof_blur_strength);
-
-        glBindVertexArray(m_quadMeshVAO);
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-        glBindVertexArray(0);
-        glEnable(GL_DEPTH_TEST);
-    }
-
-    else if (m_antialiasing)
-    {
         glDisable(GL_DEPTH_TEST);
 
         m_shaders["antialiasing"]->use();
@@ -456,7 +478,34 @@ void Renderer::update()
         glBindVertexArray(0);
         glEnable(GL_DEPTH_TEST);
     }
-    else
+    if (m_dof)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        m_shaders["dof"]->use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_antialiasing ? m_postprocessingAuxTexture : m_textureFBO);
+        m_shaders["dof"]->setInt("color_texture", 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_depthTexture);
+        m_shaders["dof"]->setInt("depth_texture", 1);
+
+        const auto inverse_screen_size = glm::vec2(1.0f / m_window->m_width, 1.0f / m_window->m_height);
+        m_shaders["dof"]->setVec2("inverse_screen_size", inverse_screen_size);
+
+        m_shaders["dof"]->setFloat("DOF_FOCUS_DISTANCE", m_dof_focus_distance);
+        m_shaders["dof"]->setFloat("DOF_FOCUS_RANGE", m_dof_focus_range);
+        m_shaders["dof"]->setFloat("DOF_BLUR_STRENGTH", m_dof_blur_strength);
+
+        glBindVertexArray(m_quadMeshVAO);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        glBindVertexArray(0);
+        glEnable(GL_DEPTH_TEST);
+    }
+    if (!m_antialiasing && !m_dof)
     {
         m_shaders["fbo"]->use();
         glActiveTexture(GL_TEXTURE0);
@@ -583,7 +632,7 @@ void Renderer::resizeFramebuffer(int width, int height)
 
     // Resize depth and stencil buffer if needed
     // glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
-    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
     // glBindRenderbuffer(GL_RENDERBUFFER, 0);
     //
     glDeleteTextures(1, &m_depthTexture);
@@ -596,6 +645,22 @@ void Renderer::resizeFramebuffer(int width, int height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAuxFBO);
+
+    // Delete old texture
+    glDeleteTextures(1, &m_postprocessingAuxTexture);
+    // Generate and bind a new texture with the updated size
+    glGenTextures(1, &m_postprocessingAuxTexture);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessingAuxTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+    // Texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingAuxTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
