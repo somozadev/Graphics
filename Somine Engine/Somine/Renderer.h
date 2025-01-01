@@ -42,6 +42,10 @@ private:
     float m_dof_focus_range{2.0f}; // 4.375
     float m_dof_blur_strength{1.0f}; // 10 
     
+    bool m_vignette{true};
+    float m_vignette_radius{0.5f};    
+    float m_vignette_softness{0.2f};  
+    float m_vignette_intensity{0.8f};
     
     bool m_antialiasing{true};
     int m_antialiasing_debug_mode{0};
@@ -60,11 +64,16 @@ private:
     std::vector<PointLight*> m_point_lights; 
     std::vector<SpotLight*> m_spot_lights; 
 
+    GLuint m_postprocessingAFBO{0};
+    GLuint m_postprocessingATexture{0};
+    GLuint m_postprocessingBFBO{0};
+    GLuint m_postprocessingBTexture{0};
+
+
     GLuint m_FBO{0};
-    GLuint m_postprocessingAuxFBO{0};
-    GLuint m_postprocessingAuxTexture{0};
-    
     GLuint m_textureFBO{0}; //final rendered texture
+    
+    
     GLuint m_quadMeshVAO{0};
     GLuint m_RBO{0}; //rbo for depth and stencil 
     GLuint m_depthTexture{0};

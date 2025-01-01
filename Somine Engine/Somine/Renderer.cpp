@@ -75,6 +75,10 @@ void Renderer::initShadersMap()
         "dof",NEW(Shader, "resources/shaders/dof/vertex_shader.glsl",
                   "resources/shaders/dof/fragment_shader.glsl")
     });
+    m_shaders.insert({
+        "vignette",NEW(Shader, "resources/shaders/vignette/vertex_shader.glsl",
+                       "resources/shaders/vignette/fragment_shader.glsl")
+    });
 }
 
 void Renderer::init()
@@ -256,13 +260,13 @@ void Renderer::initFramebuffer()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-    //init quadmesh to postprocessing aux texture
-    glGenFramebuffers(1, &m_postprocessingAuxFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAuxFBO);
+    //init postprocessing fbos n textures
+    glGenFramebuffers(1, &m_postprocessingAFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAFBO);
 
-    glGenTextures(1, &m_postprocessingAuxTexture);
+    glGenTextures(1, &m_postprocessingATexture);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_postprocessingAuxTexture);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessingATexture);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLint)m_window->m_width, (GLint)m_window->m_height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, 0);
@@ -271,7 +275,26 @@ void Renderer::initFramebuffer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingAuxTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingATexture, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+    glGenFramebuffers(1, &m_postprocessingBFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingBFBO);
+
+    glGenTextures(1, &m_postprocessingBTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessingBTexture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLint)m_window->m_width, (GLint)m_window->m_height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingBTexture, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -450,19 +473,22 @@ void Renderer::update()
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    GLuint current_texture = m_textureFBO; // Empieza con la textura de la escena base.
+    bool usePing = true; // Alternar entre ping y pong
+
+    // Antialiasing
     if (m_antialiasing)
     {
-        if (m_dof)
-            glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAuxFBO);
+        GLuint targetFBO = usePing ? m_postprocessingAFBO : m_postprocessingBFBO;
+        GLuint targetTexture = usePing ? m_postprocessingATexture : m_postprocessingBTexture;
 
-
+        glBindFramebuffer(GL_FRAMEBUFFER, targetFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         glDisable(GL_DEPTH_TEST);
 
         m_shaders["antialiasing"]->use();
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_textureFBO);
+        glBindTexture(GL_TEXTURE_2D, current_texture);
         m_shaders["antialiasing"]->setInt("screen_texture", 0);
         m_shaders["antialiasing"]->setInt("debug_mode", m_antialiasing_debug_mode);
         m_shaders["antialiasing"]->setFloat("FXAA_MAX_SPAN", m_antialiasing_max_span);
@@ -470,30 +496,37 @@ void Renderer::update()
         m_shaders["antialiasing"]->setFloat("FXAA_MUL_REDUCE", (1.0 / m_antialiasing_mul_reduce));
         m_shaders["antialiasing"]->setFloat("FXAA_MIN_REDUCE", (1.0 / m_antialiasing_min_reduce));
 
-        const auto inverse_screen_size = glm::vec2(1.0f / m_window->m_width, 1.0f / m_window->m_height);
+        glm::vec2 inverse_screen_size(1.0f / m_window->m_width, 1.0f / m_window->m_height);
         m_shaders["antialiasing"]->setVec2("inverse_screen_size", inverse_screen_size);
 
         glBindVertexArray(m_quadMeshVAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         glBindVertexArray(0);
         glEnable(GL_DEPTH_TEST);
+
+        current_texture = targetTexture;
+        usePing = !usePing; // Alternar
     }
+
+    // Depth of Field
     if (m_dof)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        GLuint targetFBO = usePing ? m_postprocessingAFBO : m_postprocessingBFBO;
+        GLuint targetTexture = usePing ? m_postprocessingATexture : m_postprocessingBTexture;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, targetFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_shaders["dof"]->use();
-
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_antialiasing ? m_postprocessingAuxTexture : m_textureFBO);
+        glBindTexture(GL_TEXTURE_2D, current_texture);
         m_shaders["dof"]->setInt("color_texture", 0);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, m_depthTexture);
         m_shaders["dof"]->setInt("depth_texture", 1);
 
-        const auto inverse_screen_size = glm::vec2(1.0f / m_window->m_width, 1.0f / m_window->m_height);
+        glm::vec2 inverse_screen_size(1.0f / m_window->m_width, 1.0f / m_window->m_height);
         m_shaders["dof"]->setVec2("inverse_screen_size", inverse_screen_size);
 
         m_shaders["dof"]->setFloat("DOF_FOCUS_DISTANCE", m_dof_focus_distance);
@@ -503,10 +536,36 @@ void Renderer::update()
         glBindVertexArray(m_quadMeshVAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         glBindVertexArray(0);
-        glEnable(GL_DEPTH_TEST);
+
+        current_texture = targetTexture;
+        usePing = !usePing; // Alternar
     }
-    if (!m_antialiasing && !m_dof)
+
+    // Vignette
+    if (m_vignette)
     {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        m_shaders["vignette"]->use();
+        m_shaders["vignette"]->setVec2("screen_resolution", glm::vec2(m_window->m_width, m_window->m_height));
+        m_shaders["vignette"]->setFloat("vignette_radius", m_vignette_radius);
+        m_shaders["vignette"]->setFloat("vignette_softness", m_vignette_softness);
+        m_shaders["vignette"]->setFloat("vignette_intensity", m_vignette_intensity);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, current_texture);
+        m_shaders["vignette"]->setInt("scene_texture", 0);
+
+        glBindVertexArray(m_quadMeshVAO);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        glBindVertexArray(0);
+    }
+
+    // Render final si no hay efectos
+    if (!m_antialiasing && !m_dof && !m_vignette)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         m_shaders["fbo"]->use();
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_textureFBO);
@@ -537,6 +596,13 @@ void Renderer::update()
         ImguiHandler::addFloat("min reduce", &m_antialiasing_min_reduce, 1, 128);
         ImguiHandler::addFloat("luma threshold", &m_antialiasing_luma_threshold, 0.00001f, 1.0f);
         ImguiHandler::addInteger("max span", &m_antialiasing_max_span, 1, 128);
+    }
+    if (ImGui::CollapsingHeader("vignette"))
+    {
+        ImguiHandler::addCheckBox("vignette enabled", &m_vignette);
+        ImguiHandler::addFloat("vignette radius", &m_vignette_radius, 0.4f, 0.8f);
+        ImguiHandler::addFloat("vignette softness", &m_vignette_softness, 0.1f, 0.3f);
+        ImguiHandler::addFloat("vignette intensity", &m_vignette_intensity, 0.5f, 1.0f);
     }
     if (ImGui::CollapsingHeader("Lights"))
     {
@@ -613,7 +679,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void Renderer::resizeFramebuffer(int width, int height)
+void Renderer::resizeFramebuffer(int width, int height) //this can be improved -> avoid repeat code
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 
@@ -647,20 +713,32 @@ void Renderer::resizeFramebuffer(int width, int height)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAuxFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAFBO);
 
-    // Delete old texture
-    glDeleteTextures(1, &m_postprocessingAuxTexture);
-    // Generate and bind a new texture with the updated size
-    glGenTextures(1, &m_postprocessingAuxTexture);
-    glBindTexture(GL_TEXTURE_2D, m_postprocessingAuxTexture);
+
+    glDeleteTextures(1, &m_postprocessingATexture);
+
+    glGenTextures(1, &m_postprocessingATexture);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessingATexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
-    // Texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingAuxTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingATexture, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingBFBO);
+    glDeleteTextures(1, &m_postprocessingBTexture);
+
+    glGenTextures(1, &m_postprocessingBTexture);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessingBTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingBTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

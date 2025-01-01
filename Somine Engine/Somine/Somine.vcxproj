@@ -275,6 +275,8 @@
     <Content Include="resources\shaders\multipass\TextureFBO\fragment_shader.glsl" />
     <Content Include="resources\shaders\multipass\TextureFBO\vertex_shader.glsl" />
     <Content Include="resources\shaders\vertex_shader.glsl" />
+    <Content Include="resources\shaders\vignette\fragment_shader.glsl" />
+    <Content Include="resources\shaders\vignette\vertex_shader.glsl" />
     <Content Include="resources\textures\container.jpg" />
     <Content Include="resources\textures\happy.png" />
     <Content Include="resources\textures\terrain_heightmap.png" />
