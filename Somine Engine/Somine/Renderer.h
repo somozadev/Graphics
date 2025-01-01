@@ -41,6 +41,10 @@ private:
     float m_dof_focus_distance{10.0f}; // 0.1
     float m_dof_focus_range{2.0f}; // 4.375
     float m_dof_blur_strength{1.0f}; // 10 
+
+    
+    bool m_pixelize{true};
+    float pixel_size{10.0f};
     
     bool m_vignette{true};
     float m_vignette_radius{0.5f};    

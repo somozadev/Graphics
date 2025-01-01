@@ -274,6 +274,8 @@
     <Content Include="resources\shaders\multipass\forward\stencil_pass\vertex_shader.glsl" />
     <Content Include="resources\shaders\multipass\TextureFBO\fragment_shader.glsl" />
     <Content Include="resources\shaders\multipass\TextureFBO\vertex_shader.glsl" />
+    <Content Include="resources\shaders\pixelize\fragment_shader.glsl" />
+    <Content Include="resources\shaders\pixelize\vertex_shader.glsl" />
     <Content Include="resources\shaders\vertex_shader.glsl" />
     <Content Include="resources\shaders\vignette\fragment_shader.glsl" />
     <Content Include="resources\shaders\vignette\vertex_shader.glsl" />

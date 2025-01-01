@@ -79,6 +79,10 @@ void Renderer::initShadersMap()
         "vignette",NEW(Shader, "resources/shaders/vignette/vertex_shader.glsl",
                        "resources/shaders/vignette/fragment_shader.glsl")
     });
+    m_shaders.insert({
+        "pixelize",NEW(Shader, "resources/shaders/pixelize/vertex_shader.glsl",
+                       "resources/shaders/pixelize/fragment_shader.glsl")
+    });
 }
 
 void Renderer::init()
@@ -540,11 +544,35 @@ void Renderer::update()
         current_texture = targetTexture;
         usePing = !usePing; // Alternar
     }
+    if (m_pixelize)
+    {
+        GLuint targetFBO = usePing ? m_postprocessingAFBO : m_postprocessingBFBO;
+        GLuint targetTexture = usePing ? m_postprocessingATexture : m_postprocessingBTexture;
 
+        glBindFramebuffer(GL_FRAMEBUFFER, targetFBO);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        m_shaders["pixelize"]->use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, current_texture);
+        m_shaders["pixelize"]->setInt("color_texture", 0);
+        m_shaders["pixelize"]->setFloat("pixel_size", pixel_size);
+        m_shaders["pixelize"]->setVec2("screen_resolution", glm::vec2(m_window->m_width, m_window->m_height));
+
+        glBindVertexArray(m_quadMeshVAO);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        glBindVertexArray(0);
+
+        current_texture = targetTexture;
+        usePing = !usePing;
+    }
     // Vignette
     if (m_vignette)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        GLuint targetFBO = usePing ? m_postprocessingAFBO : m_postprocessingBFBO;
+        GLuint targetTexture = usePing ? m_postprocessingATexture : m_postprocessingBTexture;
+
+        glBindFramebuffer(GL_FRAMEBUFFER, targetFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         m_shaders["vignette"]->use();
@@ -555,20 +583,36 @@ void Renderer::update()
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, current_texture);
-        m_shaders["vignette"]->setInt("scene_texture", 0);
+        m_shaders["vignette"]->setInt("color_texture", 0);
 
         glBindVertexArray(m_quadMeshVAO);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         glBindVertexArray(0);
+        current_texture = targetTexture;
+        usePing = !usePing;
     }
 
     // Render final si no hay efectos
-    if (!m_antialiasing && !m_dof && !m_vignette)
+    if (!m_antialiasing && !m_dof && !m_vignette && !m_pixelize)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         m_shaders["fbo"]->use();
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_textureFBO);
+        m_shaders["fbo"]->setInt("source_texture", 0);
+
+        glBindVertexArray(m_quadMeshVAO);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        glBindVertexArray(0);
+    }
+    else
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        m_shaders["fbo"]->use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, current_texture);
         m_shaders["fbo"]->setInt("source_texture", 0);
 
         glBindVertexArray(m_quadMeshVAO);
@@ -603,6 +647,11 @@ void Renderer::update()
         ImguiHandler::addFloat("vignette radius", &m_vignette_radius, 0.4f, 0.8f);
         ImguiHandler::addFloat("vignette softness", &m_vignette_softness, 0.1f, 0.3f);
         ImguiHandler::addFloat("vignette intensity", &m_vignette_intensity, 0.5f, 1.0f);
+    }
+    if (ImGui::CollapsingHeader("pixelize"))
+    {
+        ImguiHandler::addCheckBox("pixelize enabled", &m_pixelize);
+        ImguiHandler::addFloat("pixel size", &pixel_size, 1.0f, 50.0f);
     }
     if (ImGui::CollapsingHeader("Lights"))
     {

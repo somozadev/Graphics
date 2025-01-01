@@ -1,6 +1,6 @@
 #version 330 core
 
-uniform sampler2D scene_texture;   
+uniform sampler2D color_texture;   
 uniform vec2 screen_resolution;   
 uniform float vignette_radius;    // 0.4-0.8
 uniform float vignette_softness;  // 0.1 - 0.3
@@ -22,6 +22,6 @@ void main() {
     vignette = 1.0 - vignette;
 
     // Step 3: Combina el efecto de vignette con la escena original
-    vec3 scene_color = texture(scene_texture, tex_coords).rgb;
+    vec3 scene_color = texture(color_texture, tex_coords).rgb;
     fragment_color = vec4(scene_color * (1.0 - vignette * vignette_intensity), 1.0);
 }
