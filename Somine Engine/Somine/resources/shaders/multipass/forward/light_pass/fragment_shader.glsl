@@ -87,6 +87,8 @@ float CalcShadow(vec4 light_space_pos)
         }
     }
     shadow /= 9.0; 
+        if(proj_coords.z > 1.0)
+        shadow = 0.0;
     return shadow;
     
  //   vec3 proj_coords = light_space_pos.xyz / light_space_pos.w; 
