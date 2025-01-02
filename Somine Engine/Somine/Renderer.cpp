@@ -52,10 +52,11 @@ void Renderer::initShadersMap()
         "light_pass", NEW(Shader, "resources/shaders/multipass/forward/light_pass/vertex_shader.glsl",
                           "resources/shaders/multipass/forward/light_pass/fragment_shader.glsl")
     });
-    // m_shaders.insert({
-    //     "shadowmap_pass", NEW(Shader, "resources/shaders/multipass/forward/shadowmap_pass/vertex_shader.glsl",
-    //                           "resources/shaders/multipass/forward/shadowmap_pass/fragment_shader.glsl")
-    // });
+    m_shaders.insert({
+        "shadowmap_pass_one", NEW(
+            Shader, "resources/shaders/multipass/forward/shadowmap_pass/vertex_shader.glsl",
+            "resources/shaders/multipass/forward/shadowmap_pass/fragment_shader.glsl")
+    });
     m_shaders.insert({
         "grid",NEW(Shader, "resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")
     });
@@ -100,7 +101,7 @@ void Renderer::init()
 
 void Renderer::initModels()
 {
-    m_models.emplace_back(NEW(Terrain, 20, 60, 0.20f, "resources/textures/tough_grass.jpg"));
+    m_models.emplace_back(NEW(Terrain, 100, 300, 0.30f, "resources/textures/tough_grass.jpg"));
     Model* terrain = m_models.back();
     terrain->transform->move(0.0f, -2.0f, 0.0f);
     terrain->transform->scale(1.0f, 1.0f, 1.0f);
@@ -145,8 +146,8 @@ void Renderer::initModels()
 
     m_models.emplace_back(m_light);
     Model* light = m_models.back();
-    light->transform->move(0.0, 2.0, 5.0);
-    light->transform->scale(0.2, 0.2, 0.2);
+    light->transform->move(0.0, 10.0, 0.0);
+    light->transform->scale(1.0, 1.0, 1.0);
 
     for (int i = 0; i < 1; ++i)
     {
@@ -168,7 +169,6 @@ void Renderer::initModels()
         sm_light->transform->move(1.0 + i, 2.0, 0.0);
     }
 }
-
 
 void Renderer::initFramebuffer()
 {
@@ -265,12 +265,12 @@ void Renderer::initFramebuffer()
 
 
     //init postprocessing fbos n textures
-    glGenFramebuffers(1, &m_postprocessingAFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAFBO);
+    glGenFramebuffers(1, &m_postprocessing_A_FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessing_A_FBO);
 
-    glGenTextures(1, &m_postprocessingATexture);
+    glGenTextures(1, &m_postprocessing_texture_A);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_postprocessingATexture);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessing_texture_A);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLint)m_window->m_width, (GLint)m_window->m_height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, 0);
@@ -279,17 +279,17 @@ void Renderer::initFramebuffer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingATexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessing_texture_A, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
-    glGenFramebuffers(1, &m_postprocessingBFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingBFBO);
+    glGenFramebuffers(1, &m_postprocessing_B_FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessing_B_FBO);
 
-    glGenTextures(1, &m_postprocessingBTexture);
+    glGenTextures(1, &m_postprocessing_texture_B);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_postprocessingBTexture);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessing_texture_B);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, (GLint)m_window->m_width, (GLint)m_window->m_height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, 0);
@@ -298,29 +298,32 @@ void Renderer::initFramebuffer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingBTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessing_texture_B, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    initShadowmap();
 }
 
 void Renderer::initShadowmap()
 {
     glGenFramebuffers(1, &m_shadowmap_FBO);
-    glDisable(GL_BLEND);
 
     glGenTextures(1, &m_shadowmap_texture_FBO);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO); //bind for reading
+    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
     glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 512 * m_shadow_resolution, 512 * m_shadow_resolution, 0,
                  GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO); //bind for writing 
+    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowmap_texture_FBO, 0);
-    glDrawBuffer(GL_NONE);
+    glDrawBuffer(GL_NONE); //no need a color buffer
+    glReadBuffer(GL_NONE);
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         std::cerr << "Error: Shadowmap FBO no es completo" << std::endl;
@@ -368,31 +371,29 @@ void Renderer::stencilPass()
 
 void Renderer::shadowmapPass()
 {
-    initShadowmap();
-
     //first sub-pass 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_shadowmap_FBO);
     glViewport(0, 0, 512 * m_shadow_resolution, 512 * m_shadow_resolution);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_shadowmap_FBO);
     glClear(GL_DEPTH_BUFFER_BIT);
-    m_shaders["shadowmap_pass"]->use();
-    glm::mat4 shadowmap_view = glm::lookAt(m_light->transform->position, m_light->getLocalDirection(),
-                                           glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 shadowmap_projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
-    m_shaders["shadowmap_pass"]->setUniformMatrix4fv("view", shadowmap_view);
-    m_shaders["shadowmap_pass"]->setUniformMatrix4fv("projection", shadowmap_projection);
+    m_shaders["shadowmap_pass_one"]->use();
+
+    glm::vec3 lightDirection = glm::normalize(m_light->getLocalDirection()); 
+    glm::vec3 lightPosition = -lightDirection * 50.0f;
+    glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f); 
+
+    glm::mat4 shadowmap_view = glm::lookAt(lightPosition, targetPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+    
+
+    glm::mat4 shadowmap_projection = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 1.0f, 100.0f);
+    glm::mat4 lightSpaceMatrix = shadowmap_projection * shadowmap_view;
+    m_shaders["shadowmap_pass_one"]->setUniformMatrix4fv("light_space_matrix", lightSpaceMatrix);
     for (auto& model : m_models)
     {
-        model->draw(m_shaders["shadowmap_pass"]);
+        model->setShaderRef(m_shaders["shadowmap_pass_one"]);
+        model->draw(m_shaders["shadowmap_pass_one"]);
     }
-
-    // //second sub-pass 
-    // glViewport(0, 0, m_window->m_width, m_window->m_height);
-    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // m_shaders["shadowmap_pass"]->setInt("texture_shadowmap", 0);
-    // glActiveTexture(0);
-    // glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
-    // glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
-    // //RenderScene
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, m_window->m_width, m_window->m_height);
 }
 
 void Renderer::colorPass()
@@ -431,6 +432,18 @@ void Renderer::lightPass()
         m_shaders["light_pass"]->setVec3("camera_local_position",
                                          m_camera.getCameraLocalPosRelativeTo(model->transform->getModelMatrix()));
 
+        glm::vec3 lightDirection = glm::normalize(m_light->getLocalDirection()); 
+        glm::vec3 lightPosition = -lightDirection * 50.0f;
+        glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f); 
+
+        glm::mat4 shadowmap_view = glm::lookAt(lightPosition, targetPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 shadowmap_projection = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 1.0f, 100.0f);
+        glm::mat4 lightSpaceMatrix = shadowmap_projection * shadowmap_view;
+        m_shaders["light_pass"]->setUniformMatrix4fv("light_view_projection", lightSpaceMatrix);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
+        m_shaders["light_pass"]->setInt("shadowmap", 1);
+
         for (const auto point_light : m_point_lights)
         {
             point_light->setShaderRef(m_shaders["light_pass"]);
@@ -468,23 +481,23 @@ void Renderer::update()
     depthPass();
     stencilPass();
     colorPass();
+    shadowmapPass();
     lightPass();
-    // shadowmapPass();
     drawGrid(projection, view);
+
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, m_window->m_width, m_window->m_height);
     glClearColor(m_bg_color[0], m_bg_color[1], m_bg_color[2], m_bg_color[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    GLuint current_texture = m_textureFBO; // Empieza con la textura de la escena base.
-    bool usePing = true; // Alternar entre ping y pong
+    GLuint current_texture = m_textureFBO;
+    bool usePing = true;
 
-    // Antialiasing
     if (m_antialiasing)
     {
-        GLuint targetFBO = usePing ? m_postprocessingAFBO : m_postprocessingBFBO;
-        GLuint targetTexture = usePing ? m_postprocessingATexture : m_postprocessingBTexture;
+        GLuint targetFBO = usePing ? m_postprocessing_A_FBO : m_postprocessing_B_FBO;
+        GLuint targetTexture = usePing ? m_postprocessing_texture_A : m_postprocessing_texture_B;
 
         glBindFramebuffer(GL_FRAMEBUFFER, targetFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -511,12 +524,10 @@ void Renderer::update()
         current_texture = targetTexture;
         usePing = !usePing; // Alternar
     }
-
-    // Depth of Field
     if (m_dof)
     {
-        GLuint targetFBO = usePing ? m_postprocessingAFBO : m_postprocessingBFBO;
-        GLuint targetTexture = usePing ? m_postprocessingATexture : m_postprocessingBTexture;
+        GLuint targetFBO = usePing ? m_postprocessing_A_FBO : m_postprocessing_B_FBO;
+        GLuint targetTexture = usePing ? m_postprocessing_texture_A : m_postprocessing_texture_B;
 
         glBindFramebuffer(GL_FRAMEBUFFER, targetFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -546,8 +557,8 @@ void Renderer::update()
     }
     if (m_pixelize)
     {
-        GLuint targetFBO = usePing ? m_postprocessingAFBO : m_postprocessingBFBO;
-        GLuint targetTexture = usePing ? m_postprocessingATexture : m_postprocessingBTexture;
+        GLuint targetFBO = usePing ? m_postprocessing_A_FBO : m_postprocessing_B_FBO;
+        GLuint targetTexture = usePing ? m_postprocessing_texture_A : m_postprocessing_texture_B;
 
         glBindFramebuffer(GL_FRAMEBUFFER, targetFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -566,11 +577,10 @@ void Renderer::update()
         current_texture = targetTexture;
         usePing = !usePing;
     }
-    // Vignette
     if (m_vignette)
     {
-        GLuint targetFBO = usePing ? m_postprocessingAFBO : m_postprocessingBFBO;
-        GLuint targetTexture = usePing ? m_postprocessingATexture : m_postprocessingBTexture;
+        GLuint targetFBO = usePing ? m_postprocessing_A_FBO : m_postprocessing_B_FBO;
+        GLuint targetTexture = usePing ? m_postprocessing_texture_A : m_postprocessing_texture_B;
 
         glBindFramebuffer(GL_FRAMEBUFFER, targetFBO);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -591,8 +601,6 @@ void Renderer::update()
         current_texture = targetTexture;
         usePing = !usePing;
     }
-
-    // Render final si no hay efectos
     if (!m_antialiasing && !m_dof && !m_vignette && !m_pixelize)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -730,6 +738,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 void Renderer::resizeFramebuffer(int width, int height) //this can be improved -> avoid repeat code
 {
+    //FINAL FBO BUFFER//
     glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 
     // Delete old texture
@@ -745,11 +754,12 @@ void Renderer::resizeFramebuffer(int width, int height) //this can be improved -
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureFBO, 0);
 
+    //DEPTH BUFFER//
     // Resize depth and stencil buffer if needed
     // glBindRenderbuffer(GL_RENDERBUFFER, m_RBO);
     // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_width, m_height);
     // glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    //
+
     glDeleteTextures(1, &m_depthTexture);
     glGenTextures(1, &m_depthTexture);
     glBindTexture(GL_TEXTURE_2D, m_depthTexture);
@@ -762,32 +772,53 @@ void Renderer::resizeFramebuffer(int width, int height) //this can be improved -
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTexture, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingAFBO);
+
+    //SHADOWMAP BUFFER//
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO);
+    glDeleteTextures(1, &m_shadowmap_texture_FBO);
+    glGenTextures(1, &m_shadowmap_texture_FBO);
+    glBindTexture(GL_TEXTURE_2D, m_shadowmap_texture_FBO);
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, 512 * m_shadow_resolution, 512 * m_shadow_resolution, 0,
+                 GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_shadowmap_texture_FBO, 0);
 
 
-    glDeleteTextures(1, &m_postprocessingATexture);
+    //POSTPROCESSING BUFFERS//
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessing_A_FBO);
 
-    glGenTextures(1, &m_postprocessingATexture);
-    glBindTexture(GL_TEXTURE_2D, m_postprocessingATexture);
+
+    glDeleteTextures(1, &m_postprocessing_texture_A);
+
+    glGenTextures(1, &m_postprocessing_texture_A);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessing_texture_A);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingATexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessing_texture_A, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessingBFBO);
-    glDeleteTextures(1, &m_postprocessingBTexture);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_postprocessing_B_FBO);
+    glDeleteTextures(1, &m_postprocessing_texture_B);
 
-    glGenTextures(1, &m_postprocessingBTexture);
-    glBindTexture(GL_TEXTURE_2D, m_postprocessingBTexture);
+    glGenTextures(1, &m_postprocessing_texture_B);
+    glBindTexture(GL_TEXTURE_2D, m_postprocessing_texture_B);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessingBTexture, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_postprocessing_texture_B, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

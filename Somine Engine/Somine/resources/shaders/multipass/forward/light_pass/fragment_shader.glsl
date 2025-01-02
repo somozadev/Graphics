@@ -7,6 +7,7 @@ out vec4 fragment_color;
 in vec2 tex_coords;     
 in vec3 vertex_normal; 
 in vec3 position; 
+in vec4 light_space_pos;
 
 
 struct BaseLight
@@ -56,6 +57,8 @@ uniform sampler2D texture_normal1;
 uniform sampler2D texture_specular1; 
 uniform sampler2D specular_exponent1; 
 
+uniform sampler2D shadowmap; 
+
 uniform bool use_cell_shading = false; 
 uniform bool use_greyscale_shading = false; 
 uniform bool use_dnw_shading = false;
@@ -66,8 +69,40 @@ float Quantize(float value, int levels)
 {
     return floor(value * levels) / levels;
 }
+float CalcShadow(vec4 light_space_pos)
+{
+    vec3 proj_coords = light_space_pos.xyz / light_space_pos.w;
+    proj_coords = proj_coords * 0.5 + 0.5;
 
-vec4 CalcLightInternally(BaseLight base, vec3 direction, vec3 normal)
+    float bias = 0.005;
+    float closestDepth = texture(shadowmap, proj_coords.xy).r; 
+    float currentDepth = proj_coords.z- bias;
+   
+    float shadow = 0.0;
+    float texelSize = 1.0 / 2048.0; 
+    for (int x = -1; x <= 1; ++x) { //PCF (Percentage Closer Filtering)
+        for (int y = -1; y <= 1; ++y) {
+            float pcfDepth = texture(shadowmap, proj_coords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0; 
+    return shadow;
+    
+ //   vec3 proj_coords = light_space_pos.xyz / light_space_pos.w; 
+ //   proj_coords = proj_coords * 0.5 + 0.5; 
+//
+ //   if (proj_coords.z > 1.0 || proj_coords.x < 0.0 || proj_coords.x > 1.0 || proj_coords.y < 0.0 || proj_coords.y > 1.0)
+ //       return 0.0;
+//
+ //   float current_depth = proj_coords.z;
+ //   float closest_depth = texture(shadowmap, proj_coords.xy).r;
+ //   float bias = 0.005;
+//
+ //   return current_depth > closest_depth + bias ? 1.0 : 0.0;
+}
+
+vec4 CalcLightInternally(BaseLight base, vec3 direction, vec3 normal, float shadow_factor)
 {
     
     vec4 ambient_color = vec4(base.color, 1.0) * base.ambient_intensity * vec4(material.ambient_color, 1.0) ;
@@ -81,7 +116,7 @@ vec4 CalcLightInternally(BaseLight base, vec3 direction, vec3 normal)
             {
                 diffuse_color = vec4(base.color, 1.0) * base.diffuse_intensity * vec4(material.diffuse_color, 1.0) * diffuse_factor;
             }
-            return (ambient_color + diffuse_color); 
+            return ((ambient_color + (1.0 - shadow_factor)) * diffuse_color);
     }
     else
     {
@@ -101,13 +136,13 @@ vec4 CalcLightInternally(BaseLight base, vec3 direction, vec3 normal)
             } 
         //  vec3 emission = texture(material.emission_color, tex_coords).rgb;
         }     
-        return(ambient_color + diffuse_color + specular_color); //+emission
+        return((ambient_color + (1.0 - shadow_factor))  * (diffuse_color + specular_color));//+emission
     }     
 }
 
-vec4 CalcDirectionalLight(vec3 normal)
+vec4 CalcDirectionalLight(vec3 normal, float shadow_factor)
 {
-    return CalcLightInternally(directional_light.base, directional_light.direction, normal);
+    return CalcLightInternally(directional_light.base, directional_light.direction, normal, shadow_factor);
 }
 vec4 CalcPointLight(PointLight point_light, vec3 normal)
 {
@@ -115,7 +150,7 @@ vec4 CalcPointLight(PointLight point_light, vec3 normal)
     float distance = length(light_direction);
     light_direction = normalize(light_direction); 
     
-    vec4 color = CalcLightInternally(point_light.base, light_direction, normal);
+    vec4 color = CalcLightInternally(point_light.base, light_direction, normal, 0);
     float attenuation = point_light.constant_attenuation + point_light.linear_attenuation * distance + point_light.exponential_attenuation * distance * distance; 
     
     return color/attenuation; 
@@ -138,7 +173,8 @@ void main()
 {
 
     vec3 norm_normal = normalize(vertex_normal);
-    vec4 total_lightning = CalcDirectionalLight(norm_normal); 
+    float shadow_factor = CalcShadow(light_space_pos);
+    vec4 total_lightning = CalcDirectionalLight(norm_normal, shadow_factor); 
     for(int i=0; i < n_point_lights; i++)
     {
         total_lightning += CalcPointLight(point_lights[i], norm_normal);
