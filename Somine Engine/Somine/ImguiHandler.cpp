@@ -238,12 +238,7 @@ void ImguiHandler::mainLight(DirectionalLight* light)
     {
         ImGui::BeginGroup();
         ImGui::Text("Main Light");
-        float tempPos[3] = {light->transform->position.x, light->transform->position.y, light->transform->position.z};
 
-         if(ImGui::SliderFloat3("position (temp)", tempPos, -360.0f, 360.0f))
-         {
-             light->transform->move(tempPos[0], tempPos[1], tempPos[2]);
-         }
         float temp[3] = {light->transform->rotation.x, light->transform->rotation.y, light->transform->rotation.z};
         ImGui::SliderFloat3("direction", temp, -360.0f, 360.0f);
         light->transform->rotate(temp[0], temp[1], temp[2]);
