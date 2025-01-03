@@ -7,11 +7,13 @@ out vec2 tex_coords;
 out vec3 vertex_normal;
 out vec3 position; 
 out vec4 light_space_pos; 
+out vec3 light_pos_cube[6];
 
 uniform mat4 view;
 uniform mat4 projection;
 uniform mat4 model;
-uniform mat4 light_view_projection; 
+uniform mat4 light_view_projection;
+uniform mat4 point_light_shadow_matrices[6]; 
 
 void main()
 {
@@ -21,7 +23,10 @@ void main()
     tex_coords = vertex_tex_coord;
     light_space_pos = light_view_projection * vec4(position, 1.0);//* world_position* vec4(vertex_position, 1.0); 
         
+    for (int i = 0; i < 6; ++i)
+    {
+        light_pos_cube[i] = (point_light_shadow_matrices[i] * vec4(position, 1.0)).xyz;
+    }
+    
     gl_Position = projection * view * vec4(position, 1.0);
-    
-    
 }

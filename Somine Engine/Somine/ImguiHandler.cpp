@@ -121,6 +121,7 @@ void ImguiHandler::addPointLights(std::vector<PointLight*> lights)
         int index = 0;
         for (const auto& light : lights)
         {
+            ImGui::PushID(index);
             if (ImGui::CollapsingHeader("Point Light##"))
             {
                 ImGui::BeginGroup();
@@ -161,9 +162,10 @@ void ImguiHandler::addPointLights(std::vector<PointLight*> lights)
 
                 ImGui::SliderFloat(label.c_str(), &light->m_exponential_attenuation, 0.0f, 10.0f);
 
-                index++;
                 ImGui::EndGroup();
             }
+            index++;
+            ImGui::PopID();
         }
     }
 }
@@ -175,6 +177,7 @@ void ImguiHandler::addSpotLights(std::vector<SpotLight*> lights)
         int index = 0;
         for (const auto& light : lights)
         {
+            ImGui::PushID(index);
             if (ImGui::CollapsingHeader("Spot Light##"))
             {
                 ImGui::BeginGroup();
@@ -225,9 +228,10 @@ void ImguiHandler::addSpotLights(std::vector<SpotLight*> lights)
 
                 ImGui::SliderFloat(label.c_str(), &light->m_exponential_attenuation, 0.0f, 10.0f);
 
-                index++;
                 ImGui::EndGroup();
             }
+                index++;
+            ImGui::PopID();
         }
     }
 }

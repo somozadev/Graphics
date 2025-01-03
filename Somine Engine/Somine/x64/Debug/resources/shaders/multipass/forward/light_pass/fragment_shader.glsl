@@ -8,6 +8,7 @@ in vec2 tex_coords;
 in vec3 vertex_normal; 
 in vec3 position; 
 in vec4 light_space_pos;
+in vec3 light_pos_cube[6];  
 
 
 struct BaseLight
@@ -58,6 +59,7 @@ uniform sampler2D texture_specular1;
 uniform sampler2D specular_exponent1; 
 
 uniform sampler2D shadowmap; 
+uniform samplerCube point_light_shadowmap;
 
 uniform bool use_cell_shading = false; 
 uniform bool use_greyscale_shading = false; 
@@ -90,19 +92,14 @@ float CalcShadow(vec4 light_space_pos)
         if(proj_coords.z > 1.0)
         shadow = 0.0;
     return shadow;
-    
- //   vec3 proj_coords = light_space_pos.xyz / light_space_pos.w; 
- //   proj_coords = proj_coords * 0.5 + 0.5; 
-//
- //   if (proj_coords.z > 1.0 || proj_coords.x < 0.0 || proj_coords.x > 1.0 || proj_coords.y < 0.0 || proj_coords.y > 1.0)
- //       return 0.0;
-//
- //   float current_depth = proj_coords.z;
- //   float closest_depth = texture(shadowmap, proj_coords.xy).r;
- //   float bias = 0.005;
-//
- //   return current_depth > closest_depth + bias ? 1.0 : 0.0;
 }
+float CalcPointLightShadow(vec3 light_pos_cube)
+{
+    float closestDepth = texture(point_light_shadowmap, light_pos_cube).r;
+    float currentDepth = length(position - light_pos_cube);
+    return currentDepth > closestDepth ? 1.0 : 0.0;
+}
+
 
 vec4 CalcLightInternally(BaseLight base, vec3 direction, vec3 normal, float shadow_factor)
 {
@@ -154,8 +151,14 @@ vec4 CalcPointLight(PointLight point_light, vec3 normal)
     
     vec4 color = CalcLightInternally(point_light.base, light_direction, normal, 0);
     float attenuation = point_light.constant_attenuation + point_light.linear_attenuation * distance + point_light.exponential_attenuation * distance * distance; 
+     float shadow_factor = 0.0;
+    for (int i = 0; i < 6; ++i)
+    {
+        shadow_factor += CalcPointLightShadow(light_pos_cube[i]);
+    }
+    shadow_factor /= 6.0;  
     
-    return color/attenuation; 
+    return (color / attenuation)  + (1.0 - shadow_factor);
 }
 vec4 CalcSpotLight(SpotLight spot_light, vec3 normal)
 {

@@ -68,6 +68,8 @@ private:
     std::vector<PointLight*> m_point_lights; 
     std::vector<SpotLight*> m_spot_lights; 
 
+    GLuint current_texture;
+    
     GLuint m_postprocessing_A_FBO{0};
     GLuint m_postprocessing_texture_A{0};
     GLuint m_postprocessing_B_FBO{0};
@@ -78,11 +80,15 @@ private:
     GLuint m_textureFBO{0}; //final rendered texture
         
     GLuint m_quadMeshVAO{0};
-    GLuint m_RBO{0}; //rbo for depth and stencil 
+    GLuint m_RBO{0}; //rbo for depth and stencil
+    
     GLuint m_depthTexture{0};
     
     GLuint m_shadowmap_FBO {0};
     GLuint m_shadowmap_texture_FBO {0};
+
+    GLuint m_shadowmap_cubemap_FBO {0};
+    GLuint m_shadowmap_cubemap_texture_FBO {0};
 
     int m_shadow_resolution{4};
     
