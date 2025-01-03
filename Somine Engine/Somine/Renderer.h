@@ -30,6 +30,7 @@ private:
     std::unordered_map<std::string, const Shader*> m_shaders;
     // PostProcessingStack m_postProcessingStack;
     std::vector<Model*> m_models;
+    std::vector<Model*> m_movable_models;
 
     float m_current_frame{};
     float m_last_frame{};

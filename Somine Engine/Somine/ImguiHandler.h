@@ -24,6 +24,7 @@ public:
     static void addInteger(const char* text, int* reference);
     static void addModel(const char* modelName, Model* model);
     static void addPointLights(std::vector<PointLight*> lights);
+    static void addMovableModels(std::vector<Model*> models);
     static void addSpotLights(std::vector<SpotLight*> lights);
     static void mainLight(DirectionalLight* light);
     static void draw();

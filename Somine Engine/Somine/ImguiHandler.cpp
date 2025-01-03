@@ -170,6 +170,48 @@ void ImguiHandler::addPointLights(std::vector<PointLight*> lights)
     }
 }
 
+void ImguiHandler::addMovableModels(std::vector<Model*> models)
+{
+    int index = 0;
+    for (const auto& model : models)
+    {
+        ImGui::PushID(index);
+        if (ImGui::CollapsingHeader("Model##"))
+        {
+            ImGui::BeginGroup();
+            if (model == nullptr || model->transform == nullptr) continue;
+
+            std::string label = "Position##" + std::to_string(index);
+            float temp[3] = {
+                model->transform->position.x, model->transform->position.y, model->transform->position.z
+            };
+            if (ImGui::SliderFloat3(label.c_str(), temp, -20.0f, 20.0f))
+            {
+                model->transform->move(temp[0], temp[1], temp[2]);
+            }
+            label = "Direction##" + std::to_string(index);
+            float tempD[3] = {
+                model->transform->rotation.x, model->transform->rotation.y, model->transform->rotation.z
+            };
+            if (ImGui::SliderFloat3(label.c_str(), tempD, -360.0f, 360.0f))
+            {
+                model->transform->rotate(tempD[0], tempD[1], tempD[2]);
+            }
+            label = "Scale##" + std::to_string(index);
+            float tempS[3] = {
+                model->transform->scalar.x, model->transform->scalar.y, model->transform->scalar.z
+            };
+            if (ImGui::SliderFloat3(label.c_str(), tempS, 0.10f, 5.0f))
+            {
+                model->transform->scale(tempS[0], tempS[1], tempS[2]);
+            }
+            ImGui::EndGroup();
+        }
+        index++;
+        ImGui::PopID();
+    }
+}
+
 void ImguiHandler::addSpotLights(std::vector<SpotLight*> lights)
 {
     if (ImGui::CollapsingHeader("Spot lights"))
@@ -230,7 +272,7 @@ void ImguiHandler::addSpotLights(std::vector<SpotLight*> lights)
 
                 ImGui::EndGroup();
             }
-                index++;
+            index++;
             ImGui::PopID();
         }
     }

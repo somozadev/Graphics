@@ -57,11 +57,11 @@ void Renderer::initShadersMap()
             Shader, "resources/shaders/multipass/forward/shadowmap_pass/vertex_shader.glsl",
             "resources/shaders/multipass/forward/shadowmap_pass/fragment_shader.glsl")
     });
-    m_shaders.insert({
-        "shadowmap_cubemap", NEW(
-            Shader, "resources/shaders/multipass/forward/shadowmap_pass/shadowmap_cubemap/vertex_shader.glsl",
-            "resources/shaders/multipass/forward/shadowmap_pass/shadowmap_cubemap/fragment_shader.glsl")
-    });
+    // m_shaders.insert({
+    //     "shadowmap_cubemap", NEW(
+    //         Shader, "resources/shaders/multipass/forward/shadowmap_pass/shadowmap_cubemap/vertex_shader.glsl",
+    //         "resources/shaders/multipass/forward/shadowmap_pass/shadowmap_cubemap/fragment_shader.glsl")
+    // });
     m_shaders.insert({
         "grid",NEW(Shader, "resources/shaders/grid/vertex_shader.glsl", "resources/shaders/grid/fragment_shader.glsl")
     });
@@ -148,13 +148,14 @@ void Renderer::initModels()
     scientist->transform->scale(1.0f, 1.0f, 1.0f);
     scientist->transform->rotate(0.0f, 180.0f, 0.0f);
 
+    for (auto model : m_models)
+        m_movable_models.push_back(new Model(*model));
 
     m_models.emplace_back(m_light);
     Model* light = m_models.back();
     light->transform->move(0.0, 10.0, 0.0);
     light->transform->scale(1.0, 1.0, 1.0);
 
-    for (int i = 0; i < 1; ++i)
     for (int i = 0; i < 4; ++i)
     {
         PointLight* p_light = NEW(PointLight, i);
@@ -484,7 +485,7 @@ void Renderer::lightPass()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_shaders["light_pass"]->use();
     m_shaders["light_pass"]->setInt("n_point_lights", m_point_lights.size()); //WARNING: it's capped to 10
-    m_shaders["light_pass"]->setInt("n_spot_lights", m_spot_lights.size());//WARNING: it's capped to 10
+    m_shaders["light_pass"]->setInt("n_spot_lights", m_spot_lights.size()); //WARNING: it's capped to 10
     /*
      *  CUBEMAP SHADOWS FOR POINT LIGHT NOT WORKING CORRECTLY, COMMENTED FOR PERFORMANCE
      * 
@@ -759,6 +760,10 @@ void Renderer::update()
         ImguiHandler::mainLight(m_light);
         ImguiHandler::addPointLights(m_point_lights);
         ImguiHandler::addSpotLights(m_spot_lights);
+    }
+    if (ImGui::CollapsingHeader("Models"))
+    {
+        ImguiHandler::addMovableModels(m_movable_models);
     }
     if (ImGui::CollapsingHeader("Shadows"))
     {
