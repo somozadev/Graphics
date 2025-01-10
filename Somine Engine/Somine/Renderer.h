@@ -106,6 +106,10 @@ public:
     Window* m_window;
     float m_delta_time{};
     float m_current_ms{};
+
+    float m_frame_rate{};
+    float m_latency_ms{};
+
     Renderer(Window* window = nullptr);
     void init();
     void initModels();

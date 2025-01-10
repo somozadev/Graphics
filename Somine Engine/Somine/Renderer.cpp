@@ -156,7 +156,7 @@ void Renderer::initModels()
     light->transform->move(0.0, 10.0, 0.0);
     light->transform->scale(1.0, 1.0, 1.0);
 
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         PointLight* p_light = NEW(PointLight, i);
         m_point_lights.emplace_back(p_light);
@@ -166,7 +166,7 @@ void Renderer::initModels()
         pm_light->transform->move(1 + i * 2, 1.0, 0.0 + i * 2);
     }
 
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         SpotLight* s_light = NEW(SpotLight, i);
         m_spot_lights.emplace_back(s_light);
@@ -724,8 +724,8 @@ void Renderer::update()
 
     if (ImGui::CollapsingHeader("Stats"))
     {
-        ImguiHandler::showFrameRate("FPS", m_delta_time);
-        ImguiHandler::showMs("ms", m_current_ms);
+        ImguiHandler::showFrameRate("FPS", m_frame_rate);
+        ImguiHandler::showMs("ms", m_latency_ms);
     }
     if (ImGui::CollapsingHeader("depth of field"))
     {
@@ -807,13 +807,26 @@ void Renderer::setupMatrices(glm::mat4 projection, glm::mat4 view)
     m_shaders["color_pass"]->setUniformMatrix4fv("projection", projection);
 }
 
+float m_update_interval = 0.1f; 
+float m_time_since_last_update = 0.0f;
+
 void Renderer::calcDeltaTime()
 {
     m_current_frame = static_cast<float>(glfwGetTime());
     m_delta_time = m_current_frame - m_last_frame;
     m_last_frame = m_current_frame;
     m_current_ms = m_delta_time * 1000.0f;
+
+    m_time_since_last_update += m_delta_time;
+    if (m_time_since_last_update >= m_update_interval)
+    {
+        m_time_since_last_update = 0.0f;
+        m_frame_rate = 1.0f / m_delta_time;
+        m_latency_ms = m_current_ms;
+    }
     m_camera.update(m_delta_time);
+
+    
 }
 
 void Renderer::drawGrid(glm::mat4 projection, glm::mat4 view)

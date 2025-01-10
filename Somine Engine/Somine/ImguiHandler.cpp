@@ -19,11 +19,10 @@ void ImguiHandler::startWindow(const char* name)
     ImGui::Begin(name);
 }
 
-void ImguiHandler::showFrameRate(const char* text, float deltaTime)
+void ImguiHandler::showFrameRate(const char* text, float frameRate)
 {
     if (ImGui::TreeNode(text))
     {
-        float frameRate = 1.0f / deltaTime;
         ImGui::Text("Frame Rate: %.1f FPS", frameRate);
         ImGui::TreePop();
     }

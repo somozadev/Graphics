@@ -16,7 +16,6 @@ int main()
 {
     ENABLE_MEMORY_LEAK_DETECTION();
     std::cout << "C++ version: " << __cplusplus << std::endl;
-
     Window* window = NEW(Window, 640, 360, "Somine Renderer");
     Renderer* renderer = NEW(Renderer, window);
 
@@ -26,9 +25,9 @@ int main()
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window->getGLFWWindow(), true);
     ImGui_ImplOpenGL3_Init("#version 330");
-
     while (!window->shouldClose())
     {
+    glfwSwapInterval(0); 
         window->pollEvents();
         renderer->update();
         window->swapBuffers();
