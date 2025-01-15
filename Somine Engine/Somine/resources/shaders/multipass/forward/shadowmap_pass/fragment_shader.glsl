@@ -1,4 +1,4 @@
-#version 330 core
+#version 330 core   
 
 out vec4 fragment_color;
 in vec2 tex_coords;   

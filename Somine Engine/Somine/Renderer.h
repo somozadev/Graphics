@@ -39,9 +39,9 @@ private:
     bool m_wireframe{false};
 
     bool m_dof{false}; //'with the bottom config you get a cool sharp close-up dof
-    float m_dof_focus_distance{10.0f}; // 0.1
-    float m_dof_focus_range{2.0f}; // 4.375
-    float m_dof_blur_strength{1.0f}; // 10 
+    float m_dof_focus_distance{0.1f}; // 10.0
+    float m_dof_focus_range{4.375f}; // 2.0
+    float m_dof_blur_strength{10.0f}; //  1.0
 
     
     bool m_pixelize{false};

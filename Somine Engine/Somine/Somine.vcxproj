@@ -269,6 +269,8 @@
     <Content Include="resources\shaders\multipass\forward\light_pass\fragment_shader.glsl" />
     <Content Include="resources\shaders\multipass\forward\light_pass\vertex_shader.glsl" />
     <Content Include="resources\shaders\multipass\forward\shadowmap_pass\fragment_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\shadowmap_pass\spot_lights_shadowmap_pass\fragment_shader.glsl" />
+    <Content Include="resources\shaders\multipass\forward\shadowmap_pass\spot_lights_shadowmap_pass\vertex_shader.glsl" />
     <Content Include="resources\shaders\multipass\forward\shadowmap_pass\vertex_shader.glsl" />
     <Content Include="resources\shaders\multipass\forward\stencil_pass\fragment_shader.glsl" />
     <Content Include="resources\shaders\multipass\forward\stencil_pass\vertex_shader.glsl" />

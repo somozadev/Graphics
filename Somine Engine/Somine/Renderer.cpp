@@ -57,6 +57,11 @@ void Renderer::initShadersMap()
             Shader, "resources/shaders/multipass/forward/shadowmap_pass/vertex_shader.glsl",
             "resources/shaders/multipass/forward/shadowmap_pass/fragment_shader.glsl")
     });
+    m_shaders.insert({
+        "shadowmap_spotlight", NEW(
+            Shader, "resources/shaders/multipass/forward/shadowmap_pass/spot_lights_shadowmap_pass/vertex_shader.glsl",
+            "resources/shaders/multipass/forward/shadowmap_pass/spot_lights_shadowmap_pass/fragment_shader.glsl")
+    });
     // m_shaders.insert({
     //     "shadowmap_cubemap", NEW(
     //         Shader, "resources/shaders/multipass/forward/shadowmap_pass/shadowmap_cubemap/vertex_shader.glsl",
@@ -323,9 +328,9 @@ void Renderer::initShadowmap()
                  GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f}; // Prevents darkness outside the frustrum
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_shadowmap_FBO);
@@ -336,6 +341,19 @@ void Renderer::initShadowmap()
     {
         std::cerr << "Error: Shadowmap FBO no es completo" << std::endl;
     }
+
+    for (auto& spot_light : m_spot_lights) //init perticular spotlight shadowmap texture
+    {
+        glGenTextures(1, &spot_light->m_shadowmap_texture);
+        glBindTexture(GL_TEXTURE_2D, spot_light->m_shadowmap_texture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 512 * m_shadow_resolution, 512 * m_shadow_resolution, 0,
+                     GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -390,9 +408,8 @@ void Renderer::shadowmapPass()
     glm::vec3 targetPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 
     glm::mat4 shadowmap_view = glm::lookAt(lightPosition, targetPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 shadowmap_projection = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 100.0f);
 
-
-    glm::mat4 shadowmap_projection = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 1.0f, 100.0f);
     glm::mat4 lightSpaceMatrix = shadowmap_projection * shadowmap_view;
     m_shaders["shadowmap_directional"]->setUniformMatrix4fv("light_space_matrix", lightSpaceMatrix);
     for (auto& model : m_models)
@@ -400,9 +417,32 @@ void Renderer::shadowmapPass()
         model->setShaderRef(m_shaders["shadowmap_directional"]);
         model->draw(m_shaders["shadowmap_directional"]);
     }
+    m_shaders["shadowmap_spotlight"]->use();
+    glm::mat4 shadowmap_projection_perspective = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 100.0f);
+    for (auto& spot_light : m_spot_lights)
+    {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_shadowmap_FBO);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, spot_light->m_shadowmap_texture, 0);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        glm::vec3 lightPosition = spot_light->transform->position;
+        // glm::vec3 targetPosition = lightPosition + (spot_light->getLocalDirection()) *
+        //     spot_light->m_cutoff;
+
+        glm::mat4 shadowmap_viewSpot = glm::lookAt(lightPosition, targetPosition, glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 lightSpaceMatrix = shadowmap_projection_perspective * shadowmap_viewSpot;
+        m_shaders["shadowmap_spotlight"]->setUniformMatrix4fv("light_space_matrix", lightSpaceMatrix);
+        for (auto& model : m_models)
+        {
+            model->setShaderRef(m_shaders["shadowmap_spotlight"]);
+            model->draw(m_shaders["shadowmap_spotlight"]);
+        }
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, m_window->m_width, m_window->m_height);
+
+
     /*
        *  CUBEMAP SHADOWS FOR POINT LIGHT NOT WORKING CORRECTLY, COMMENTED FOR PERFORMANCE
     //point lights cubemap-shadowmap -> not working correctly for some reason 
@@ -472,6 +512,7 @@ void Renderer::colorPass()
             glEnable(GL_BLEND);  // Activate for transparent objects
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }*/
+        
         model->setShaderRef(m_shaders["color_pass"]);
         model->draw(m_shaders["color_pass"]);
     }
@@ -545,12 +586,22 @@ void Renderer::lightPass()
             point_light->setShaderData();
         }
 
-        for (const auto spot_light : m_spot_lights)
+        for (int i = 0; i < m_spot_lights.size(); i++)
         {
-            spot_light->setShaderRef(m_shaders["light_pass"]);
-            spot_light->calcLocalDirectionAndPosition(model->transform->getModelMatrix());
-            spot_light->setShaderData();
+            m_spot_lights[i]->setShaderRef(m_shaders["light_pass"]);
+            m_spot_lights[i]->calcLocalDirectionAndPosition(model->transform->getModelMatrix());
+            m_spot_lights[i]->setShaderData();
+            //std::string uniformName = "spot_light_shadowmaps[" + std::to_string(i) + "]";l
+           // glActiveTexture(GL_TEXTURE0 + i);\
+         //   glBindTexture(GL_TEXTURE_2D, m_spot_lights[i]->m_shadowmap_texture);
+         //   m_shaders["light_pass"]->setInt(uniformName, 1);
         }
+        // for (const auto spot_light : m_spot_lights)
+        // {
+        //     spot_light->setShaderRef(m_shaders["light_pass"]);
+        //     spot_light->calcLocalDirectionAndPosition(model->transform->getModelMatrix());
+        //     spot_light->setShaderData();
+        // }
         model->draw(m_shaders["light_pass"]);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -807,7 +858,7 @@ void Renderer::setupMatrices(glm::mat4 projection, glm::mat4 view)
     m_shaders["color_pass"]->setUniformMatrix4fv("projection", projection);
 }
 
-float m_update_interval = 0.1f; 
+float m_update_interval = 0.1f;
 float m_time_since_last_update = 0.0f;
 
 void Renderer::calcDeltaTime()
@@ -825,8 +876,6 @@ void Renderer::calcDeltaTime()
         m_latency_ms = m_current_ms;
     }
     m_camera.update(m_delta_time);
-
-    
 }
 
 void Renderer::drawGrid(glm::mat4 projection, glm::mat4 view)

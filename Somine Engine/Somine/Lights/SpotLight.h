@@ -7,7 +7,7 @@ public:
     SpotLight(int index);
     glm::vec3 m_world_direction {0.0f,0.0f,0.0f};
     float m_cutoff{0.0f};
-
+    GLuint m_shadowmap_texture {0};
     void calcLocalDirectionAndPosition(const glm::mat4& world);
     const glm::vec3 getLocalDirection() const;
     void setShaderData() override;

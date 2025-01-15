@@ -10,7 +10,6 @@ in vec3 position;
 in vec4 light_space_pos;
 in vec3 light_pos_cube[6];  
 
-
 struct BaseLight
 {
     vec3 color; 
@@ -60,6 +59,7 @@ uniform sampler2D specular_exponent1;
 
 uniform sampler2D shadowmap; 
 uniform samplerCube point_light_shadowmap;
+uniform sampler2D spot_light_shadowmaps[MAX_SPOT_LIGHTS];
 
 uniform bool use_cell_shading = false; 
 uniform bool use_greyscale_shading = false; 
@@ -91,6 +91,33 @@ float CalcShadow(vec4 light_space_pos)
     shadow /= 9.0; 
         if(proj_coords.z > 1.0)
         shadow = 0.0;
+    return shadow;
+}
+float CalcSpotLightShadow(vec4 light_space_pos, int index) 
+{
+      vec3 proj_coords = light_space_pos.xyz / light_space_pos.w;
+    proj_coords = proj_coords * 0.5 + 0.5;
+
+    float bias = 0.005;
+    float closestDepth = texture(spot_light_shadowmaps[index], proj_coords.xy).r;
+    float currentDepth = proj_coords.z - bias;
+
+    float shadow = 0.0;
+    float texelSize = 1.0 / 2048.0; 
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(spot_light_shadowmaps[index], proj_coords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
+
+    // if outside limits
+    if (proj_coords.z > 1.0)
+        shadow = 0.0;
+
     return shadow;
 }
 float CalcPointLightShadow(vec3 light_pos_cube)
@@ -160,7 +187,7 @@ vec4 CalcPointLight(PointLight point_light, vec3 normal)
     
     return (color / attenuation)  + (1.0 - shadow_factor);
 }
-vec4 CalcSpotLight(SpotLight spot_light, vec3 normal)
+vec4 CalcSpotLight(SpotLight spot_light, vec3 normal, int index)
 {
     vec3 light_to_pixel = normalize(position - spot_light.base.local_position);   
     float spot_factor = dot(light_to_pixel, spot_light.direction);
@@ -168,7 +195,9 @@ vec4 CalcSpotLight(SpotLight spot_light, vec3 normal)
     {
         vec4 color = CalcPointLight(spot_light.base,normal); 
         float spot_light_intensity = (1.0 - (1.0 - spot_factor) / (1.0 - spot_light.cutoff)); 
-        return color * spot_light_intensity; 
+        float shadow_factor = 0;// CalcSpotLightShadow(light_space_pos, index);
+        
+        return color * spot_light_intensity * (1-shadow_factor); 
     }
     else
         return vec4(0.0,0.0,0.0,0.0);
@@ -186,7 +215,7 @@ void main()
     }
     for(int i=0; i < n_spot_lights; i++)
     {
-        total_lightning += CalcSpotLight(spot_lights[i], norm_normal);
+        total_lightning += CalcSpotLight(spot_lights[i], norm_normal,i);
     }
     vec3 color;
     if(use_greyscale_shading)
